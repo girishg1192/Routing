@@ -27,6 +27,7 @@ SOCKET controller_server_accept(SOCKET sock)
 {
   struct sockaddr_storage client_addr;
   socklen_t size_address = sizeof(struct sockaddr_storage);
+  LOG("server_wait\n");
   int newfd = accept(sock, (struct sockaddr *) &client_addr, &size_address);
   int port = ((struct sockaddr_in *)&client_addr)->sin_port;
   LOG("ControllerAccept: %d\n", port);
@@ -35,6 +36,11 @@ SOCKET controller_server_accept(SOCKET sock)
 void control_message_receive(SOCKET sock)
 {
   control_message message;
-  recv(sock, &message, sizeof(message), 0);
-  LOG("Control: %x\s %d", message.ip, message.code);
+  int ret = recv(sock, &message, sizeof(message), 0);
+  if(!ret)
+  {
+    clear_fd(sock);
+    close(sock);
+  }
+  LOG("Control: %x\t %d", message.ip, message.code);
 }
