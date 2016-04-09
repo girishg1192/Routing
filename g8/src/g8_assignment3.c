@@ -28,9 +28,45 @@
  * @param  argv The argument list
  * @return 0 EXIT_SUCCESS
  */
+#include <sys/select.h>
+#include <sys/time.h>
+#include "controller.h"
+#include "fd_impl.h"
+
+int control_server_sock;
+int control_sock;
+int router_sock;
+int router_crash = 0;
+
 int main(int argc, char **argv)
 {
 	/*Start Here*/
+  if(argc<=1)
+    return 0;
 
-	return 0;
+  control_server_sock = set_controller_listening_port(argv[1]);
+  active_sockets = control_server_sock;
+
+  reset_fd();
+  add_fd(control_server_sock);
+  struct timeval tv;
+  tv.tv_sec = 100;
+  tv.tv_usec = 0;
+  LOG("Control sock: %d\n", active_sockets);
+  LOG("size:%x %d\n", 255, sizeof(int));
+  temp = wait_fd;
+  while(!router_crash && select(active_sockets, &temp, NULL, NULL, NULL))
+  {
+    if(FD_ISSET(control_server_sock, &temp))
+    {
+      control_sock = controller_server_accept(control_server_sock);
+      add_fd(control_sock);
+    }
+    else if(FD_ISSET(control_sock, &temp))
+    {
+      control_message_receive(control_sock);
+    }
+    temp = wait_fd;
+  }
+  return 0;
 }
