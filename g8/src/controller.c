@@ -56,20 +56,17 @@ void control_message_receive(SOCKET sock)
     close(sock);
     return;
   }
-  //TODO parse IP 
   char IP[INET_ADDRSTRLEN];
   inet_ntop(AF_INET, &(message.ip), IP, sizeof(IP));
   LOG("Control: Sender %s\n", IP);
-  int control_code = ntohs(message.code)>>8;
-  LOG("Control: %x\t %x\n", ntohl(message.ip), control_code);
+  LOG("Control: %x\tMessage Code:%x \n", ntohl(message.ip), message.code);
   LOG("Control length: %d\n", ntohs(message.length_data));
-  switch(control_code)
+  switch(message.code)
   {
     case AUTHOR: send_author(sock, message);
                  break;
     case INIT:
-                 //TODO
-                 init_vectors();
+                 init_vectors(sock, message);
                  break;
   }
   //TODO cases for message.code
@@ -77,27 +74,42 @@ void control_message_receive(SOCKET sock)
 }
 void send_author(SOCKET sock, control_message response)
 {
-  char author[] = "I, g8, have read and understood \
-    the course academic integrity policy.";
-  struct sockaddr_storage in;
-  socklen_t len = sizeof(in);
-  getpeername(sock, (struct sockaddr*)&in, &len);
-  response.ip = (((struct sockaddr_in*)&in)->sin_addr).s_addr;
+  char author[] = "I, g8, have read and understood the course academic integrity policy.";
+
+  response.ip = get_peer_from_socket(sock);
   uint16_t payload_length = sizeof(author);
 
-  response.response_time = htons(0);
-  response.length_data = htons(payload_length);
+  response.response_time = 0;
+  response.length_data = htons(payload_length)>>8;
+  LOG("payload length %x %x\n", htons(payload_length)>>8, payload_length);
   char *res = malloc(sizeof(response)+sizeof(author));
   char *copy = res;
   memcpy(copy, &response, sizeof(response));
   copy = copy+sizeof(response);
-  memcpy(copy, author, sizeof(author));
+  memcpy(copy, author, strlen(author));
 
   LOG("Sending Author %s\n", author);
-  send(sock, res, strlen(res), 0);
+  send(sock, res, sizeof(author)+sizeof(response), 0);
   free(res);
 }
-void init_vectors()
+void init_vectors(SOCKET sock, control_message header)
 {
+  char *data = malloc(header.length_data);
+  int ret = recv(sock, data, header.length_data, 0);
+  LOG("INIT received %d\n", ret);
+  for(int i=0; i<ret; i++)
+  {
+    if(i%4==0)LOG("\n");
+    LOG("%02x ", data[i]);
+  }
+
+  //TODO
   ;
+}
+int get_peer_from_socket(SOCKET sock)
+{
+  struct sockaddr_storage in;
+  socklen_t len = sizeof(in);
+  getpeername(sock, (struct sockaddr*)&in, &len);
+  return (((struct sockaddr_in*)&in)->sin_addr).s_addr;
 }
