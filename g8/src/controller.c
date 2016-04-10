@@ -15,7 +15,16 @@ SOCKET set_controller_listening_port(char* port_)
   }
   int final_port = ntohs(((struct sockaddr_in *)servinfo->ai_addr)->sin_port);
   LOG("ControlPort: listen port %d\n", final_port);
-  int err = bind(server_socket, servinfo->ai_addr, servinfo->ai_addrlen);
+
+  struct sockaddr_in in;
+  bzero(&in, sizeof(in));
+  int hport = htons(port);
+  in.sin_family = AF_INET;
+  in.sin_addr.s_addr = htonl(INADDR_ANY);
+  in.sin_port = hport;
+
+  int err = bind(server_socket, (struct sockaddr *) &in, sizeof(in));
+  //int err = bind(server_socket, servinfo->ai_addr, servinfo->ai_addrlen);
   check_error(err, "Bind");
 
   err = listen(server_socket, MAX_NUMBER);
@@ -45,6 +54,9 @@ void control_message_receive(SOCKET sock)
     return;
   }
   //TODO parse IP 
+  char IP[INET_ADDRSTRLEN];
+  inet_ntop(AF_INET, &(message.ip), IP, sizeof(IP));
+  LOG("Control: Sender %s\n", IP);
   LOG("Control: %x\t %x\n", ntohl(message.ip), ntohs(message.code)>>8);
   LOG("Control length: %d\n", ntohs(message.length_data));
   //TODO cases for message.code

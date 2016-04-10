@@ -1,4 +1,5 @@
 #include "impl_common.h"
+#include <arpa/inet.h>
 
 SOCKET set_controller_listening_port(char* port_);
 SOCKET controller_server_accept(SOCKET sock);
