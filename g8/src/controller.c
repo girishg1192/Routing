@@ -1,7 +1,9 @@
 #include "controller.h"
 
 void send_author(SOCKET sock, control_message response);
-void init_vectors();
+void init_vectors(SOCKET sock, control_message header);
+void print_buffer(char *data, int ret);
+int get_peer_from_socket(SOCKET sock);
 
 SOCKET set_controller_listening_port(char* port_)
 {
@@ -97,11 +99,36 @@ void init_vectors(SOCKET sock, control_message header)
   char *data = malloc(header.length_data);
   int ret = recv(sock, data, header.length_data, 0);
   LOG("INIT received %d\n", ret);
-  for(int i=0; i<ret; i++)
+  print_buffer(data, ret);
+  //Parse common info -> router count and update interval
+  memcpy(&router_count, data, sizeof(uint8_t));
+  data = data+sizeof(uint8_t);
+  memcpy(&timeout, data, sizeof(uint8_t));
+  data = data+sizeof(uint8_t);
+  ret = ret-2*sizeof(uint8_t);
+  print_buffer(data, ret);
+  LOG("Router Count %d data %d", router_count, ret/12);
+
+#ifdef ARRAY_ROUTER
+  router_list = malloc(sizeof(router_info)*router_count);
+#endif
+
+  for(int i=0; i<router_count; i++)
   {
-    if(i%4==0)LOG("\n");
-    LOG("%02x ", data[i]);
+#ifdef ARRAY_ROUTER
+    LOG("Router %d init\n", i);
+    memcpy(&router_list[i], data, sizeof(router_info));
+#else
+    list_elem *init_router_elem = malloc(sizeof(list_elem));
+    memcpy(&init_router_elem->router_inf, data, sizeof(router_info));
+#endif
+    data = data+sizeof(router_info);
+    //TODO add to list
   }
+  header.ip = get_peer_from_socket(sock);
+  header.response_time = 0;
+  header.length_data = 0;
+  send(sock, &header, sizeof(header), 0);
 
   //TODO
   ;
@@ -112,4 +139,12 @@ int get_peer_from_socket(SOCKET sock)
   socklen_t len = sizeof(in);
   getpeername(sock, (struct sockaddr*)&in, &len);
   return (((struct sockaddr_in*)&in)->sin_addr).s_addr;
+}
+void print_buffer(char *data, int ret)
+{
+  for(int i=0; i<ret; i++)
+  {
+    if(i%4==0)LOG("\n");
+    LOG("%02x ", data[i]);
+  }
 }
