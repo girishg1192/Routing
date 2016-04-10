@@ -9,7 +9,6 @@ struct control_message
   uint8_t code;
   uint8_t response_time;
   uint16_t length_data;
-  char payload[100];
 };
 
 typedef struct control_message control_message;

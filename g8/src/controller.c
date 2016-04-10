@@ -37,10 +37,16 @@ void control_message_receive(SOCKET sock)
 {
   control_message message;
   int ret = recv(sock, &message, sizeof(message), 0);
-  if(!ret)
+  if(ret<=0)
   {
+    LOG("Close connection");
     clear_fd(sock);
     close(sock);
+    return;
   }
-  LOG("Control: %x\t %d", message.ip, message.code);
+  //TODO parse IP 
+  LOG("Control: %x\t %x\n", ntohl(message.ip), ntohs(message.code)>>8);
+  LOG("Control length: %d\n", ntohs(message.length_data));
+  //TODO cases for message.code
+  //TODO receive args?
 }
