@@ -4,6 +4,7 @@ void send_author(SOCKET sock, control_message response);
 void init_vectors(SOCKET sock, control_message header);
 void print_buffer(char *data, int ret);
 int get_peer_from_socket(SOCKET sock);
+void ip_readable(uint32_t ip, char *IP);
 
 SOCKET set_controller_listening_port(char* port_)
 {
@@ -59,7 +60,7 @@ void control_message_receive(SOCKET sock)
     return;
   }
   char IP[INET_ADDRSTRLEN];
-  inet_ntop(AF_INET, &(message.ip), IP, sizeof(IP));
+  ip_readable(message.ip, IP);
   LOG("Control: Sender %s\n", IP);
   LOG("Control: %x\tMessage Code:%x \n", ntohl(message.ip), message.code);
   LOG("Control length: %d\n", ntohs(message.length_data));
@@ -82,15 +83,15 @@ void send_author(SOCKET sock, control_message response)
   uint16_t payload_length = sizeof(author);
 
   response.response_time = 0;
-  response.length_data = htons(payload_length)>>8;
-  LOG("payload length %x %x\n", htons(payload_length)>>8, payload_length);
+  response.length_data = htons(payload_length);
+  LOG("payload length %x %x\n", htons(payload_length), payload_length);
   char *res = malloc(sizeof(response)+sizeof(author));
   char *copy = res;
   memcpy(copy, &response, sizeof(response));
+  LOG("Sending Author %s\n", author);
   copy = copy+sizeof(response);
   memcpy(copy, author, strlen(author));
 
-  LOG("Sending Author %s\n", author);
   send(sock, res, sizeof(author)+sizeof(response), 0);
   free(res);
 }
@@ -101,13 +102,15 @@ void init_vectors(SOCKET sock, control_message header)
   LOG("INIT received %d\n", ret);
   print_buffer(data, ret);
   //Parse common info -> router count and update interval
-  memcpy(&router_count, data, sizeof(uint8_t));
-  data = data+sizeof(uint8_t);
-  memcpy(&timeout, data, sizeof(uint8_t));
-  data = data+sizeof(uint8_t);
-  ret = ret-2*sizeof(uint8_t);
-  print_buffer(data, ret);
-  LOG("Router Count %d data %d", router_count, ret/12);
+  memcpy(&router_count, data, sizeof(uint16_t));
+  router_count = ntohs(router_count);
+  data = data+sizeof(uint16_t);
+  memcpy(&timeout, data, sizeof(uint16_t));
+  timeout = ntohs(timeout);
+  data = data+sizeof(uint16_t);
+  ret = ret-2*sizeof(uint16_t);
+  LOG("\n");
+  LOG("\nRouter Count %x data %d\nTimeout %d\n", router_count, ret/12, timeout);
 
 #ifdef ARRAY_ROUTER
   router_list = malloc(sizeof(router_info)*router_count);
@@ -124,6 +127,16 @@ void init_vectors(SOCKET sock, control_message header)
 #endif
     data = data+sizeof(router_info);
     //TODO add to list
+    char IP[INET_ADDRSTRLEN];
+    ip_readable(router_list[i].ip, IP);
+    router_list[i].id = ntohs(router_list[i].id);
+    router_list[i].port_routing = ntohs(router_list[i].port_routing);
+    router_list[i].port_data = ntohs(router_list[i].port_data);
+    router_list[i].cost = ntohs(router_list[i].cost);
+    LOG("Router: %d: port %d %d\n cost:%d IP:%s\n",
+        router_list[i].id, router_list[i].port_routing, router_list[i].port_data, 
+        router_list[i].cost, IP);
+
   }
   header.ip = get_peer_from_socket(sock);
   header.response_time = 0;
@@ -148,3 +161,8 @@ void print_buffer(char *data, int ret)
     LOG("%02x ", data[i]);
   }
 }
+void ip_readable(uint32_t ip, char *IP)
+{
+  inet_ntop(AF_INET, &ip, IP, INET_ADDRSTRLEN);
+}
+

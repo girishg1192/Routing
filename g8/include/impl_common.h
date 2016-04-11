@@ -49,8 +49,8 @@ list_elem *head;
 list_elem *tail;
 #endif
 
-uint8_t router_count;
-uint8_t timeout;
+uint16_t router_count;
+uint16_t timeout;
 
 #endif
 
