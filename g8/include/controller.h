@@ -1,8 +1,6 @@
 #include "impl_common.h"
-#include <arpa/inet.h>
 #include "fd_impl.h"
 
-SOCKET set_controller_listening_port(char* port_);
 SOCKET controller_server_accept(SOCKET sock);
 void control_message_receive(SOCKET sock);
 struct control_message

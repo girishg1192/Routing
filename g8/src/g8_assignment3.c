@@ -31,9 +31,12 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include "controller.h"
+#include "router.h"
 #include "fd_impl.h"
 
-int control_server_sock;
+SOCKET control_server_sock;
+extern int router_data, router_control;
+extern int router_data_sock, router_control_sock;
 int control_sock;
 int router_sock;
 int router_crash = 0;
@@ -43,8 +46,9 @@ int main(int argc, char **argv)
 	/*Start Here*/
   if(argc<=1)
     return 0;
-
-  control_server_sock = set_controller_listening_port(argv[1]);
+  char *end;
+  int port = strtol(argv[1], &end, 10);
+  control_server_sock = create_socket_on_port(port, SOCK_STREAM);
   active_sockets = control_server_sock;
 
   reset_fd();
@@ -54,6 +58,8 @@ int main(int argc, char **argv)
   tv.tv_usec = 0;
   LOG("Control sock: %d\n", active_sockets);
   LOG("size:%x %d\n", 255, sizeof(int));
+  router_data_sock = 1000;
+  router_control_sock = 1000;
   temp = wait_fd;
   while(!router_crash && select(active_sockets, &temp, NULL, NULL, NULL))
   {
@@ -66,7 +72,16 @@ int main(int argc, char **argv)
     {
       control_message_receive(control_sock);
     }
+    else if(FD_ISSET(router_data_sock, &temp))
+    {
+      router_data_receive(router_data_sock);
+    }
+    else if(FD_ISSET(router_control_sock, &temp))
+    {
+      router_control_receive(router_control_sock);
+    }
     temp = wait_fd;
+    LOG("Ports %d %d\n", router_control_sock, router_data_sock);
   }
   return 0;
 }

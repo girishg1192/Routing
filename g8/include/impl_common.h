@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <arpa/inet.h>
 #include <stdint.h>
 
 typedef int SOCKET;
@@ -17,9 +18,12 @@ typedef int SOCKET;
 //router list as array
 #define ARRAY_ROUTER
 
-SOCKET create_socket(struct addrinfo **servinfo_, char* host, char *port);
+SOCKET create_socket_on_port(int port, int stream);
 void check_error(int err, char *func);
 #define MAX_NUMBER 20
+
+int router_data, router_control;
+SOCKET router_data_sock, router_control_sock;
 
 //Routin info, populated by controller
 //Used by routing.c

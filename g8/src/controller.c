@@ -6,38 +6,9 @@ void print_buffer(char *data, int ret);
 int get_peer_from_socket(SOCKET sock);
 void ip_readable(uint32_t ip, char *IP);
 
-SOCKET set_controller_listening_port(char* port_)
-{
-  char *end;
-  int port = strtol(port_, &end, 10);
-  LOG("ControlPort: %d\n", port);
-  struct addrinfo *servinfo;
-  SOCKET server_socket = create_socket(&servinfo, NULL, port_);
-  int yes =1;
+extern int router_data, router_control;
+extern int router_data_sock, router_control_sock;
 
-  if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
-    perror("Socket already in use, setsockopt failed");
-    exit(1);
-  }
-  int final_port = ntohs(((struct sockaddr_in *)servinfo->ai_addr)->sin_port);
-  LOG("ControlPort: listen port %d\n", final_port);
-
-  struct sockaddr_in in;
-  bzero(&in, sizeof(in));
-  int hport = htons(port);
-  in.sin_family = AF_INET;
-  in.sin_addr.s_addr = htonl(INADDR_ANY);
-  in.sin_port = hport;
-
-  int err = bind(server_socket, (struct sockaddr *) &in, sizeof(in));
-  //int err = bind(server_socket, servinfo->ai_addr, servinfo->ai_addrlen);
-  check_error(err, "Bind");
-
-  err = listen(server_socket, MAX_NUMBER);
-  check_error(err, "Listen");
-  freeaddrinfo(servinfo);
-  return server_socket;
-}
 SOCKET controller_server_accept(SOCKET sock)
 {
   struct sockaddr_storage client_addr;
@@ -133,6 +104,16 @@ void init_vectors(SOCKET sock, control_message header)
     router_list[i].port_routing = ntohs(router_list[i].port_routing);
     router_list[i].port_data = ntohs(router_list[i].port_data);
     router_list[i].cost = ntohs(router_list[i].cost);
+    if(router_list[i].cost == 0)
+    {
+      router_data = router_list[i].port_data;
+      router_data_sock = create_socket_on_port(router_data, SOCK_DGRAM);
+      add_fd(router_data);
+
+      router_control = router_list[i].port_routing;
+      router_control_sock = create_socket_on_port(router_control, SOCK_DGRAM);
+      add_fd(router_control);
+    }
     LOG("Router: %d: port %d %d\n cost:%d IP:%s\n",
         router_list[i].id, router_list[i].port_routing, router_list[i].port_data, 
         router_list[i].cost, IP);
@@ -143,8 +124,6 @@ void init_vectors(SOCKET sock, control_message header)
   header.length_data = 0;
   send(sock, &header, sizeof(header), 0);
 
-  //TODO
-  ;
 }
 int get_peer_from_socket(SOCKET sock)
 {
