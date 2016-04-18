@@ -29,9 +29,9 @@
  * @return 0 EXIT_SUCCESS
  */
 #include <sys/select.h>
-#include <sys/time.h>
 #include "controller.h"
 #include "router.h"
+#include "lists.h"
 #include "fd_impl.h"
 
 SOCKET control_server_sock;
@@ -57,12 +57,19 @@ int main(int argc, char **argv)
   tv.tv_sec = 100;
   tv.tv_usec = 0;
   LOG("Control sock: %d\n", active_sockets);
-  LOG("size:%x %d\n", 255, sizeof(int));
   router_data_sock = 1000;
   router_control_sock = 1000;
   temp = wait_fd;
-  while(!router_crash && select(active_sockets, &temp, NULL, NULL, NULL))
+  int ret;
+  while(!router_crash && (ret=select(active_sockets, &temp, NULL, NULL, &tv))>=0)
   {
+    if(ret==0)
+    {
+      if((ret=get_next_timeout())>=0)
+      {
+        //Timeout code
+      }
+    }
     if(FD_ISSET(control_server_sock, &temp))
     {
       control_sock = controller_server_accept(control_server_sock);
@@ -70,7 +77,9 @@ int main(int argc, char **argv)
     }
     else if(FD_ISSET(control_sock, &temp))
     {
-      control_message_receive(control_sock);
+      int code = control_message_receive(control_sock);
+      if(code==1)
+        router_send_updates();
     }
     else if(FD_ISSET(router_data_sock, &temp))
     {
@@ -82,6 +91,9 @@ int main(int argc, char **argv)
     }
     temp = wait_fd;
     LOG("Ports %d %d\n", router_control_sock, router_data_sock);
+    struct timeval curr_time;
+    gettimeofday(&curr_time, NULL);
+    LOG("Time-> %ld\n", curr_time.tv_sec);
   }
   return 0;
 }

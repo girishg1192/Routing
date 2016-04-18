@@ -1,4 +1,5 @@
 #include "controller.h"
+#include "lists.h"
 
 void send_author(SOCKET sock, control_message response);
 void init_vectors(SOCKET sock, control_message header);
@@ -19,7 +20,7 @@ SOCKET controller_server_accept(SOCKET sock)
   LOG("ControllerAccept: %d\n", port);
   return newfd;
 }
-void control_message_receive(SOCKET sock)
+int control_message_receive(SOCKET sock)
 {
   control_message message;
   int ret = recv(sock, &message, sizeof(message), 0);
@@ -28,7 +29,7 @@ void control_message_receive(SOCKET sock)
     LOG("Close connection");
     clear_fd(sock);
     close(sock);
-    return;
+    return -1;
   }
   char IP[INET_ADDRSTRLEN];
   ip_readable(message.ip, IP);
@@ -41,7 +42,9 @@ void control_message_receive(SOCKET sock)
                  break;
     case INIT:
                  init_vectors(sock, message);
+                 return INIT;
                  break;
+    //TODO crash -> looks easy
   }
   //TODO cases for message.code
   //TODO receive args?
@@ -84,7 +87,9 @@ void init_vectors(SOCKET sock, control_message header)
   LOG("\nRouter Count %x data %d\nTimeout %d\n", router_count, ret/12, timeout);
 
 #ifdef ARRAY_ROUTER
-  router_list = malloc(sizeof(router_info)*router_count);
+  int mem_size = sizeof(router_info)*router_count;
+  router_list = malloc(mem_size);
+  memset(router_list, 0, mem_size);
 #endif
 
   for(int i=0; i<router_count; i++)
@@ -104,8 +109,13 @@ void init_vectors(SOCKET sock, control_message header)
     router_list[i].port_routing = ntohs(router_list[i].port_routing);
     router_list[i].port_data = ntohs(router_list[i].port_data);
     router_list[i].cost = ntohs(router_list[i].cost);
+    router_list[i].nexthop_id = router_list[i].id;
+    router_list[i].nexthop_index = i;
+    if(router_list[i].cost!=UINT16_T_MAX)
+      router_list[i].neighbour = true;
     if(router_list[i].cost == 0)
     {
+      local_ip = router_list[i].ip;
       router_data = router_list[i].port_data;
       router_data_sock = create_socket_on_port(router_data, SOCK_DGRAM);
       add_fd(router_data);
@@ -117,13 +127,11 @@ void init_vectors(SOCKET sock, control_message header)
     LOG("Router: %d: port %d %d\n cost:%d IP:%s\n",
         router_list[i].id, router_list[i].port_routing, router_list[i].port_data, 
         router_list[i].cost, IP);
-
   }
   header.ip = get_peer_from_socket(sock);
   header.response_time = 0;
   header.length_data = 0;
   send(sock, &header, sizeof(header), 0);
-
 }
 int get_peer_from_socket(SOCKET sock)
 {
@@ -140,8 +148,3 @@ void print_buffer(char *data, int ret)
     LOG("%02x ", data[i]);
   }
 }
-void ip_readable(uint32_t ip, char *IP)
-{
-  inet_ntop(AF_INET, &ip, IP, INET_ADDRSTRLEN);
-}
-

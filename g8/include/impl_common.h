@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/select.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <netdb.h>
 
 #include <stdlib.h>
@@ -11,6 +12,8 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <stdint.h>
+#include <stdbool.h>
+#include <limits.h>
 
 typedef int SOCKET;
 #define LOG printf
@@ -20,10 +23,14 @@ typedef int SOCKET;
 
 SOCKET create_socket_on_port(int port, int stream);
 void check_error(int err, char *func);
+void ip_readable(uint32_t ip, char *IP);
 #define MAX_NUMBER 20
 
 int router_data, router_control;
 SOCKET router_data_sock, router_control_sock;
+uint32_t local_ip;
+#define ROUTER_INFO_HEADER 12
+#define UINT16_T_MAX 65535
 
 //Routin info, populated by controller
 //Used by routing.c
@@ -34,8 +41,22 @@ struct router_info
   uint16_t port_data;
   uint16_t cost;
   uint32_t ip;
+  uint16_t nexthop_id;
+  uint16_t nexthop_index;
+  bool neighbour;
 };
 typedef struct router_info router_info;
+struct timer_elem
+{
+  uint32_t timeout;
+  uint32_t ip;
+  uint16_t port;
+  bool update;
+  uint8_t failures;   //if failures reach 3 drop neighbour
+  struct timer_elem *next;
+  struct timer_elem *prev;
+};
+typedef struct timer_elem timer_elem;
 
 
 #ifdef ARRAY_ROUTER

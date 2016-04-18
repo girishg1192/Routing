@@ -2,7 +2,7 @@
 #include "fd_impl.h"
 
 SOCKET controller_server_accept(SOCKET sock);
-void control_message_receive(SOCKET sock);
+int control_message_receive(SOCKET sock);
 struct control_message
 {
   uint32_t ip;

@@ -26,7 +26,7 @@ void check_error(int err, char* func)
 SOCKET create_socket_on_port(int port, int stream)
 {
   LOG("ControlPort: %d\n", port);
-  SOCKET server_socket = socket(AF_INET, SOCK_STREAM, 0);
+  SOCKET server_socket = socket(AF_INET, stream, 0);
   int yes =1;
 
   if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
@@ -49,4 +49,8 @@ SOCKET create_socket_on_port(int port, int stream)
   err = listen(server_socket, MAX_NUMBER);
   check_error(err, "Listen");
   return server_socket;
+}
+void ip_readable(uint32_t ip, char *IP)
+{
+  inet_ntop(AF_INET, &ip, IP, INET_ADDRSTRLEN);
 }
