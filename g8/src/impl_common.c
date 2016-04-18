@@ -46,8 +46,11 @@ SOCKET create_socket_on_port(int port, int stream)
   int err = bind(server_socket, (struct sockaddr *) &in, sizeof(in));
   check_error(err, "Bind");
 
-  err = listen(server_socket, MAX_NUMBER);
-  check_error(err, "Listen");
+  if(stream!=SOCK_DGRAM)
+  {
+    err = listen(server_socket, MAX_NUMBER);
+    check_error(err, "Listen");
+  }
   return server_socket;
 }
 void ip_readable(uint32_t ip, char *IP)

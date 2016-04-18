@@ -49,6 +49,7 @@ void router_send_updates()
   uint32_t ip = local_ip;
   memcpy(data, &ip, sizeof(uint32_t));
   data = data+sizeof(uint32_t);
+  LOG("Copied header %d count %d\n", data-final, router_count);
   for(int i=0; i<router_count; i++)
   {
     uint32_t ip_addr = router_list[i].ip;
@@ -64,11 +65,12 @@ void router_send_updates()
     memcpy(data, &temp, sizeof(uint16_t));
     data+sizeof(uint16_t);
   }
-  LOG("Data copied %d %d", size, data-final);
+  LOG("Data copied %d %d\n", size, data-final);
   for(int i=0; i<router_count; i++)
   {
     if(!router_list[i].neighbour)
       continue;
+    LOG("Sending data to %d %d\n", i, router_list[i].port_routing);
     SOCKET sock = socket(AF_INET, SOCK_DGRAM, 0);
 
     struct sockaddr_in in;

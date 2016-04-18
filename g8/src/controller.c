@@ -111,7 +111,8 @@ void init_vectors(SOCKET sock, control_message header)
     router_list[i].cost = ntohs(router_list[i].cost);
     router_list[i].nexthop_id = router_list[i].id;
     router_list[i].nexthop_index = i;
-    if(router_list[i].cost!=UINT16_T_MAX)
+    router_list[i].neighbour = false;
+    if(router_list[i].cost!=UINT16_T_MAX && router_list[i].cost!=0)
       router_list[i].neighbour = true;
     if(router_list[i].cost == 0)
     {
