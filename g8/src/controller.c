@@ -96,12 +96,12 @@ void init_vectors(SOCKET sock, control_message header)
   {
 #ifdef ARRAY_ROUTER
     LOG("Router %d init\n", i);
-    memcpy(&router_list[i], data, sizeof(router_info));
+    memcpy(&router_list[i], data, ROUTER_INFO_HEADER);
 #else
     list_elem *init_router_elem = malloc(sizeof(list_elem));
     memcpy(&init_router_elem->router_inf, data, sizeof(router_info));
 #endif
-    data = data+sizeof(router_info);
+    data = data+ROUTER_INFO_HEADER;
     //TODO add to list
     char IP[INET_ADDRSTRLEN];
     ip_readable(router_list[i].ip, IP);
