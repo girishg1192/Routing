@@ -96,6 +96,7 @@ int main(int argc, char **argv)
       {
         update_start();
         router_send_updates();
+        tv.tv_sec = timeout;
       }
     }
     if(FD_ISSET(router_data_sock, &temp))
