@@ -119,11 +119,11 @@ void init_vectors(SOCKET sock, control_message header)
       local_ip = router_list[i].ip;
       router_data = router_list[i].port_data;
       router_data_sock = create_socket_on_port(router_data, SOCK_DGRAM);
-      add_fd(router_data);
+      add_fd(router_data_sock);
 
       router_control = router_list[i].port_routing;
       router_control_sock = create_socket_on_port(router_control, SOCK_DGRAM);
-      add_fd(router_control);
+      add_fd(router_control_sock);
     }
     LOG("Router: %d: port %d %d\n cost:%d IP:%s\n",
         router_list[i].id, router_list[i].port_routing, router_list[i].port_data, 
