@@ -1,4 +1,6 @@
 #include "router.h"
+int find_router_by_port_ip(uint16_t port, uint32_t ip);
+int find_index_by_id(uint16_t id);
 SOCKET start_router_data(int port)
 {
   return 0;
@@ -22,13 +24,58 @@ void router_data_receive(SOCKET sock)
 void router_control_receive(SOCKET sock)
 {
   struct sockaddr_in addr;
-  char buffer[1000];
+  char *buffer = malloc(1000);
   int fromlen = sizeof addr;
   int ret = recvfrom(sock, &buffer, sizeof(buffer), 0,
                   (struct sockaddr *)&addr, &fromlen);
   char IP[INET_ADDRSTRLEN];
   ip_readable(addr.sin_addr.s_addr, IP);
   LOG("ROUTER Control: Received %d:%s->%x\n", ret, IP, addr.sin_addr.s_addr);
+
+  uint16_t count;
+  memcpy(&count, buffer, sizeof(uint16_t));
+  count = ntohs(count);
+  buffer=buffer+sizeof(uint16_t);
+
+  uint16_t src_port;
+  memcpy(&src_port, buffer, sizeof(uint16_t));
+  src_port = ntohs(src_port);
+  buffer=buffer+sizeof(uint16_t);
+
+  uint32_t src_ip;
+  memcpy(&src_ip, buffer, sizeof(uint32_t));
+  buffer = buffer+sizeof(uint32_t);
+
+  int src_index =  find_router_by_port_ip(src_port, src_ip);
+  router_info source = router_list[src_index];
+  for(int i=0; i<count; i++)
+  {
+    uint32_t ip_addr;
+    memcpy(&ip_addr, buffer, sizeof(uint32_t));
+    buffer = buffer + sizeof(uint32_t);
+
+    uint16_t port;
+    memcpy(&port, buffer, sizeof(uint16_t));
+    buffer = buffer + sizeof(uint32_t);
+    
+    uint16_t router_id, router_cost;
+    memcpy(&router_id, buffer, sizeof(uint16_t));
+    router_id = ntohs(router_id);
+    buffer = buffer + sizeof(uint16_t);
+    memcpy(&router_cost, buffer, sizeof(uint16_t));
+    router_cost = ntohs(router_cost);
+    buffer = buffer + sizeof(uint16_t);
+    int index = find_index_by_id(router_id);
+    if(router_list[i].cost>(source.cost + router_cost))
+    {
+      router_list[i].cost = source.cost + router_cost;
+      router_list[i].nexthop_id = source.id;
+      router_list[i].nexthop_index = src_index;
+      //update route
+      LOG("Shorter path to %d through %d\n", router_id, src_index);
+    }
+  }
+  free(buffer);
   //TODO handle actual routing and stuff
 }
 void router_send_updates()
@@ -82,4 +129,19 @@ void router_send_updates()
         (struct sockaddr *)&in, sizeof(in));
   }
 }
-
+int find_router_by_port_ip(uint16_t port, uint32_t ip)
+{
+  for(int i=0; i<router_count; i++)
+  {
+    if(router_list[i].ip == ip && router_list[i].port_routing == port)
+      return i;
+  }
+}
+int find_index_by_id(uint16_t id)
+{
+  for(int i=0; i<router_count; i++)
+  {
+    if(router_list[i].id == id)
+      return i;
+  }
+}
