@@ -7,6 +7,7 @@ void print_buffer(char *data, int ret);
 int get_peer_from_socket(SOCKET sock);
 void ip_readable(uint32_t ip, char *IP);
 void crash_send(SOCKET sock, control_message response);
+void update_router(SOCKET sock, control_message response);
 
 extern int router_data, router_control;
 extern int router_data_sock, router_control_sock;
@@ -44,6 +45,10 @@ int control_message_receive(SOCKET sock)
     case INIT:
                  init_vectors(sock, message);
                  return INIT;
+                 break;
+    case UPDATE:
+                 update_router(sock, message);
+                 return UPDATE;
                  break;
     case CRASH:
                  crash_send(sock, message);
@@ -155,6 +160,27 @@ void print_buffer(char *data, int ret)
 }
 void crash_send(SOCKET sock, control_message response)
 {
+  response.ip = get_peer_from_socket(sock);
+  response.response_time = 0;
+  response.length_data = 0;
+  send(sock, &response, sizeof(response), 0);
+}
+void update_router(SOCKET sock, control_message response)
+{
+  char *data = malloc(response.length_data);
+  int ret = recv(sock, data, response.length_data, 0);
+  uint16_t router_id, router_cost;
+  memcpy(&router_id, data, sizeof(uint16_t));
+  router_id = ntohs(router_id);
+  data = data+sizeof(uint16_t);
+  memcpy(&router_cost, data, sizeof(uint16_t));
+  router_cost = ntohs(router_cost);
+  data = data+sizeof(uint16_t);
+  int i = find_index_by_id(router_id);
+  router_list[i].cost = router_cost;
+  LOG("Update router %d %d %x to %d", router_list[i].id, 
+      router_list[i].port_routing, router_list[i].ip, router_cost);
+
   response.ip = get_peer_from_socket(sock);
   response.response_time = 0;
   response.length_data = 0;
