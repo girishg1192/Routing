@@ -75,17 +75,17 @@ int main(int argc, char **argv)
       control_sock = controller_server_accept(control_server_sock);
       add_fd(control_sock);
     }
-    else if(FD_ISSET(control_sock, &temp))
+    if(FD_ISSET(control_sock, &temp))
     {
       int code = control_message_receive(control_sock);
       if(code==1)
         router_send_updates();
     }
-    else if(FD_ISSET(router_data_sock, &temp))
+    if(FD_ISSET(router_data_sock, &temp))
     {
       router_data_receive(router_data_sock);
     }
-    else if(FD_ISSET(router_control_sock, &temp))
+    if(FD_ISSET(router_control_sock, &temp))
     {
       router_control_receive(router_control_sock);
     }
