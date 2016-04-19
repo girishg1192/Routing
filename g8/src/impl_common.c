@@ -57,3 +57,11 @@ void ip_readable(uint32_t ip, char *IP)
 {
   inet_ntop(AF_INET, &ip, IP, INET_ADDRSTRLEN);
 }
+void print_buffer(char *data, int ret)
+{
+  for(int i=0; i<ret; i++)
+  {
+    if(i%4==0)LOG("\n");
+    LOG("%02x ", data[i]);
+  }
+}

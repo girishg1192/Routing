@@ -55,7 +55,6 @@ int control_message_receive(SOCKET sock)
                  return CRASH;
                  break;
   }
-  //TODO cases for message.code
   //TODO receive args?
 }
 void send_author(SOCKET sock, control_message response)
@@ -127,7 +126,7 @@ void init_vectors(SOCKET sock, control_message header)
     {
       local_ip = router_list[i].ip;
       router_data = router_list[i].port_data;
-      router_data_sock = create_socket_on_port(router_data, SOCK_DGRAM);
+      router_data_sock = create_socket_on_port(router_data, SOCK_STREAM);
       add_fd(router_data_sock);
 
       router_control = router_list[i].port_routing;
@@ -149,14 +148,6 @@ int get_peer_from_socket(SOCKET sock)
   socklen_t len = sizeof(in);
   getpeername(sock, (struct sockaddr*)&in, &len);
   return (((struct sockaddr_in*)&in)->sin_addr).s_addr;
-}
-void print_buffer(char *data, int ret)
-{
-  for(int i=0; i<ret; i++)
-  {
-    if(i%4==0)LOG("\n");
-    LOG("%02x ", data[i]);
-  }
 }
 void crash_send(SOCKET sock, control_message response)
 {

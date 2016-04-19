@@ -76,6 +76,7 @@ list_elem *tail;
 
 uint16_t router_count;
 uint16_t timeout;
+void print_buffer(char *data, int ret);
 
 #endif
 
