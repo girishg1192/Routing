@@ -98,6 +98,10 @@ int main(int argc, char **argv)
         router_send_updates();
         tv.tv_sec = timeout;
       }
+      else if(code==4)
+      {
+        router_crash = 1;
+      }
     }
     if(FD_ISSET(router_data_sock, &temp))
     {

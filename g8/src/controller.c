@@ -6,6 +6,7 @@ void init_vectors(SOCKET sock, control_message header);
 void print_buffer(char *data, int ret);
 int get_peer_from_socket(SOCKET sock);
 void ip_readable(uint32_t ip, char *IP);
+void crash_send(SOCKET sock, control_message response);
 
 extern int router_data, router_control;
 extern int router_data_sock, router_control_sock;
@@ -44,7 +45,10 @@ int control_message_receive(SOCKET sock)
                  init_vectors(sock, message);
                  return INIT;
                  break;
-    //TODO crash -> looks easy
+    case CRASH:
+                 crash_send(sock, message);
+                 return CRASH;
+                 break;
   }
   //TODO cases for message.code
   //TODO receive args?
@@ -148,4 +152,11 @@ void print_buffer(char *data, int ret)
     if(i%4==0)LOG("\n");
     LOG("%02x ", data[i]);
   }
+}
+void crash_send(SOCKET sock, control_message response)
+{
+  response.ip = get_peer_from_socket(sock);
+  response.response_time = 0;
+  response.length_data = 0;
+  send(sock, &response, sizeof(response), 0);
 }
