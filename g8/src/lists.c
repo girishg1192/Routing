@@ -9,6 +9,7 @@ void list_push(timer_elem *node)
 {
   if(timeout_list_head==NULL)// && timeout_list_head == timeout_list_tail)
   {
+    init = 1;
     timeout_list_head = node;
     timeout_list_tail = node;
     node->next = NULL;
@@ -31,13 +32,17 @@ timer_elem* list_pop()
   else
   {
     timer_elem* node = timeout_list_head;
-    timeout_list_head = timeout_list_head->next;
-    if(timeout_list_head == NULL)
+    if(timeout_list_head->next == NULL)
     {
-      timeout_list_tail == NULL;
+      timeout_list_head = NULL;
+      timeout_list_tail = NULL;
       init=0;
     }
-    timeout_list_head->prev = NULL;
+    else
+    {
+      timeout_list_head = timeout_list_head->next;
+      timeout_list_head->prev = NULL;
+    }
     return node;
   }
 }
@@ -56,6 +61,9 @@ void update_start()
   memset(updates, 0, sizeof(timer_elem));
   updates->update = true;
   updates->failures = 0;
+  struct timeval curr_time;
+  gettimeofday(&curr_time, NULL);
+  updates->timeout = curr_time.tv_sec + timeout;
   list_push(updates);
 }
 void print_router_list()
@@ -88,5 +96,6 @@ uint32_t update_timeout()
   timer_elem *update = list_pop();
   update->timeout = update->timeout + timeout;
   list_push(update);
-  return get_next_timeout();
+  uint32_t ret = get_next_timeout();
+  return ret;
 }
