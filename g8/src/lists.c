@@ -7,7 +7,6 @@ void list_init()
 }
 void list_push(timer_elem *node)
 {
-  init = 1;
   if(timeout_list_head==NULL)// && timeout_list_head == timeout_list_tail)
   {
     timeout_list_head = node;
@@ -42,8 +41,17 @@ timer_elem* list_pop()
     return node;
   }
 }
+timer_elem* list_peek()
+{
+  if(timeout_list_head==NULL)
+    return NULL;
+  return timeout_list_head;
+}
 void update_start()
 {
+  if(init)
+    return;
+  list_init();
   timer_elem* updates = malloc(sizeof(timer_elem));
   memset(updates, 0, sizeof(timer_elem));
   updates->update = true;
@@ -66,12 +74,19 @@ uint32_t get_next_timeout()
   if(!init)
     return -1;
   timer_elem *check;
-  check = list_pop();
+  check = list_peek();
   uint32_t ret=check->timeout;
   struct timeval curr_time;
   gettimeofday(&curr_time, NULL);
-  check->timeout = curr_time.tv_sec + timeout;
+  //check->timeout = curr_time.tv_sec + timeout;
   ret = ret - curr_time.tv_sec;
-  list_push(check);
+  //list_push(check);
   return ret;
+}
+uint32_t update_timeout()
+{
+  timer_elem *update = list_pop();
+  update->timeout = update->timeout + timeout;
+  list_push(update);
+  return get_next_timeout();
 }

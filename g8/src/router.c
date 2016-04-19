@@ -28,7 +28,7 @@ void router_control_receive(SOCKET sock)
                   (struct sockaddr *)&addr, &fromlen);
   char IP[INET_ADDRSTRLEN];
   ip_readable(addr.sin_addr.s_addr, IP);
-  LOG("ROUTER: Received %d:%s->%x\n", ret, IP, addr.sin_addr.s_addr);
+  LOG("ROUTER Control: Received %d:%s->%x\n", ret, IP, addr.sin_addr.s_addr);
   //TODO handle actual routing and stuff
 }
 void router_send_updates()

@@ -65,10 +65,24 @@ int main(int argc, char **argv)
   {
     if(ret==0)
     {
-      if((ret=get_next_timeout())>=0)
+      timer_elem *curr = list_peek();
+      if(curr->update)
+        router_send_updates();
+      else
       {
+        //Update failure for neighbours
+      }
+      //Push back to queue
+      int time_update = update_timeout();
+      
+      //Next timeout calculation
+      if(time_update>=0)
+      {
+        tv.tv_sec = time_update;
         //Timeout code
       }
+      else
+        tv.tv_sec = 10;
     }
     if(FD_ISSET(control_server_sock, &temp))
     {
@@ -79,7 +93,10 @@ int main(int argc, char **argv)
     {
       int code = control_message_receive(control_sock);
       if(code==1)
+      {
+        update_start();
         router_send_updates();
+      }
     }
     if(FD_ISSET(router_data_sock, &temp))
     {
