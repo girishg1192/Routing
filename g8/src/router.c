@@ -25,8 +25,9 @@ void router_control_receive(SOCKET sock)
 {
   struct sockaddr_in addr;
   char *buffer = malloc(1000);
+  char *ptr = buffer;
   int fromlen = sizeof addr;
-  int ret = recvfrom(sock, &buffer, sizeof(buffer), 0,
+  int ret = recvfrom(sock, buffer, 1000, 0,
                   (struct sockaddr *)&addr, &fromlen);
   char IP[INET_ADDRSTRLEN];
   ip_readable(addr.sin_addr.s_addr, IP);
@@ -45,6 +46,7 @@ void router_control_receive(SOCKET sock)
   uint32_t src_ip;
   memcpy(&src_ip, buffer, sizeof(uint32_t));
   buffer = buffer+sizeof(uint32_t);
+  LOG("Updates : %d from %d %x\n", count, src_port, src_ip);
 
   int src_index =  find_router_by_port_ip(src_port, src_ip);
   router_info source = router_list[src_index];
@@ -66,16 +68,16 @@ void router_control_receive(SOCKET sock)
     router_cost = ntohs(router_cost);
     buffer = buffer + sizeof(uint16_t);
     int index = find_index_by_id(router_id);
-    if(router_list[i].cost>(source.cost + router_cost))
+    if(router_list[index].cost>(source.cost + router_cost))
     {
-      router_list[i].cost = source.cost + router_cost;
-      router_list[i].nexthop_id = source.id;
-      router_list[i].nexthop_index = src_index;
+      router_list[index].cost = source.cost + router_cost;
+      router_list[index].nexthop_id = source.id;
+      router_list[index].nexthop_index = src_index;
       //update route
       LOG("Shorter path to %d through %d\n", router_id, src_index);
     }
   }
-  free(buffer);
+  free(ptr);
   //TODO handle actual routing and stuff
 }
 void router_send_updates()
