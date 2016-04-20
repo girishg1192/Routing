@@ -186,6 +186,7 @@ void routing_table_send(SOCKET sock, control_message message)
 {
   int size = sizeof(control_message) + router_count*ROUTING_TABLE_UPDATE;
   char *table = malloc(size);
+  char *result = table;
   memset(table, 0 , size);
   //table+= sizeof(control_message);  //skip header
   //or Not
@@ -194,7 +195,6 @@ void routing_table_send(SOCKET sock, control_message message)
   message.length_data = htons(router_count*ROUTING_TABLE_UPDATE);
   memcpy(table, &message, sizeof(control_message));
   table+= sizeof(control_message);
-  char *result = table;
   //TODO send crashed nodes?
   for(int i=0; i<router_count; i++)
   {
