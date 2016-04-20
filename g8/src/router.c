@@ -103,16 +103,16 @@ void router_send_updates()
   {
     uint32_t ip_addr = router_list[i].ip;
     memcpy(data, &ip_addr, sizeof(uint32_t));
-    data = data+sizeof(uint32_t);
+    data+= sizeof(uint32_t);
     uint16_t port = htons(router_list[i].port_routing);
     memcpy(data, &port, sizeof(uint16_t));
-    data = data+sizeof(uint32_t);
+    data+= sizeof(uint32_t);
     uint16_t temp = htons(router_list[i].id);
     memcpy(data, &temp, sizeof(uint16_t));
-    data+sizeof(uint16_t);
+    data+= sizeof(uint16_t);
     temp = htons(router_list[i].cost);
     memcpy(data, &temp, sizeof(uint16_t));
-    data+sizeof(uint16_t);
+    data+= sizeof(uint16_t);
   }
   LOG("Data copied %d %d\n", size, data-final);
   for(int i=0; i<router_count; i++)
