@@ -8,6 +8,7 @@ int get_peer_from_socket(SOCKET sock);
 void ip_readable(uint32_t ip, char *IP);
 void crash_send(SOCKET sock, control_message response);
 void update_router(SOCKET sock, control_message response);
+void routing_table_send(SOCKET sock, control_message message);
 
 extern int router_data, router_control;
 extern int router_data_sock, router_control_sock;
@@ -45,6 +46,10 @@ int control_message_receive(SOCKET sock)
     case INIT:
                  init_vectors(sock, message);
                  return INIT;
+                 break;
+    case ROUTING_TABLE:
+                 routing_table_send(sock, message);
+                 return ROUTING_TABLE;
                  break;
     case UPDATE:
                  update_router(sock, message);
@@ -176,4 +181,32 @@ void update_router(SOCKET sock, control_message response)
   response.response_time = 0;
   response.length_data = 0;
   send(sock, &response, sizeof(response), 0);
+}
+void routing_table_send(SOCKET sock, control_message message)
+{
+  int size = sizeof(control_message) + router_count*ROUTING_TABLE_UPDATE;
+  char *table = malloc(size);
+  memset(table, 0 , size);
+  //table+= sizeof(control_message);  //skip header
+  //or Not
+  message.ip = get_peer_from_socket(sock);
+  message.response_time = 0;
+  message.length_data = htons(router_count*ROUTING_TABLE_UPDATE);
+  memcpy(table, &message, sizeof(control_message));
+  table+= sizeof(control_message);
+  char *result = table;
+  //TODO send crashed nodes?
+  for(int i=0; i<router_count; i++)
+  {
+    uint16_t temp = htons(router_list[i].id);
+    memcpy(table, &temp, sizeof(uint16_t));
+    table+= sizeof(uint32_t);
+    temp = htons(router_list[i].nexthop_id);
+    memcpy(table, &temp, sizeof(uint16_t));
+    table+= sizeof(uint16_t);
+    temp = htons(router_list[i].cost);
+    memcpy(table, &temp, sizeof(uint16_t));
+    table+= sizeof(uint16_t);
+  }
+  send(sock, result, size, 0);
 }

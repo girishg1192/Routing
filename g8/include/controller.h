@@ -1,6 +1,8 @@
 #include "impl_common.h"
 #include "fd_impl.h"
 
+#define ROUTING_TABLE_UPDATE 8
+
 SOCKET controller_server_accept(SOCKET sock);
 int control_message_receive(SOCKET sock);
 struct control_message
