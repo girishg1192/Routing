@@ -83,6 +83,8 @@ uint32_t get_next_timeout()
     return -1;
   timer_elem *check;
   check = list_peek();
+  if(check == NULL)
+    return -1;
   uint32_t ret=check->timeout;
   struct timeval curr_time;
   gettimeofday(&curr_time, NULL);
@@ -93,9 +95,12 @@ uint32_t get_next_timeout()
 }
 uint32_t update_timeout()
 {
-  timer_elem *update = list_pop();
-  update->timeout = update->timeout + timeout;
-  list_push(update);
+  if(list_peek()!=NULL)
+  {
+    timer_elem *update = list_pop();
+    update->timeout = update->timeout + timeout;
+    list_push(update);
+  }
   uint32_t ret = get_next_timeout();
   return ret;
 }
