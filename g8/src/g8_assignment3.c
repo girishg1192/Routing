@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     if(ret==0)
     {
       timer_elem *curr = list_peek();
-      if(curr->update)
+      if(curr!=NULL && curr->update)
         router_send_updates();
       else
       {
