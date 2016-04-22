@@ -93,8 +93,9 @@ int main(int argc, char **argv)
     if(FD_ISSET(control_sock, &temp))
     {
       int code = control_message_receive(control_sock);
-      if(code==1)
+      if(code == 1)
       {
+        //TODO move to function
         update_start();
         router_send_updates();
         tv.tv_sec = timeout;
@@ -102,6 +103,10 @@ int main(int argc, char **argv)
       else if(code==4)
       {
         router_crash = 1;
+      }
+      else if(code == -1)
+      {
+        control_sock = 1000; 
       }
       FD_CLR(control_sock ,&temp);
     }
