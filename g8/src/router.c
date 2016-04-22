@@ -10,18 +10,17 @@ SOCKET start_router_control(int port)
 void router_data_receive(SOCKET sock)
 {
   struct sockaddr_in addr;
-  char buffer[1000];
+  data_packet buffer;
   int fromlen = sizeof addr;
-  int ret = recvfrom(sock, &buffer, sizeof(buffer), 0,
-                  (struct sockaddr *)&addr, &fromlen);
+  int ret = recv(sock, &buffer, sizeof(data_packet), 0);
   char IP[INET_ADDRSTRLEN];
-  ip_readable(addr.sin_addr.s_addr, IP);
+  ip_readable(buffer.dest_ip, IP);
   if(ret==0)
   {
     clear_fd(sock);
     close(sock);
   }
-  LOG("ROUTER: Received %d:%s->%x\n", ret, IP, addr.sin_addr.s_addr);
+  LOG("ROUTER: Received %d:%s\n", ret, IP);
   //TODO handle actual routing and stuff
 }
 
