@@ -9,6 +9,7 @@ void ip_readable(uint32_t ip, char *IP);
 void crash_send(SOCKET sock, control_message response);
 void update_router(SOCKET sock, control_message response);
 void routing_table_send(SOCKET sock, control_message message);
+void start_sendfile(SOCKET sock, control_message message);
 
 extern int router_data, router_control;
 extern int router_data_sock, router_control_sock;
@@ -59,6 +60,11 @@ int control_message_receive(SOCKET sock)
                  crash_send(sock, message);
                  return CRASH;
                  break;
+                 //DATA PLANE!!!
+    case SENDFILE:
+                 start_sendfile(sock, message);
+                 return SENDFILE;
+                 break;
   }
   //TODO receive args?
 }
@@ -85,6 +91,7 @@ void send_author(SOCKET sock, control_message response)
 void init_vectors(SOCKET sock, control_message header)
 {
   char *data = malloc(header.length_data);
+  char *cleanup = data;
   int ret = recv(sock, data, header.length_data, 0);
   LOG("INIT received %d\n", ret);
   print_buffer(data, ret);
@@ -146,6 +153,7 @@ void init_vectors(SOCKET sock, control_message header)
   header.response_time = 0;
   header.length_data = 0;
   send(sock, &header, sizeof(header), 0);
+  free(cleanup);
 }
 int get_peer_from_socket(SOCKET sock)
 {
@@ -164,6 +172,7 @@ void crash_send(SOCKET sock, control_message response)
 void update_router(SOCKET sock, control_message response)
 {
   char *data = malloc(response.length_data);
+  char *cleanup;
   int ret = recv(sock, data, response.length_data, 0);
   uint16_t router_id, router_cost;
   memcpy(&router_id, data, sizeof(uint16_t));
@@ -181,6 +190,7 @@ void update_router(SOCKET sock, control_message response)
   response.response_time = 0;
   response.length_data = 0;
   send(sock, &response, sizeof(response), 0);
+  free(cleanup);
 }
 void routing_table_send(SOCKET sock, control_message message)
 {
@@ -209,4 +219,44 @@ void routing_table_send(SOCKET sock, control_message message)
     table+= sizeof(uint16_t);
   }
   send(sock, result, size, 0);
+  free(result);
+}
+
+void start_sendfile(SOCKET sock, control_message message)
+{
+  data_packet file_packet;
+  memset(&file_packet, 0, sizeof(data_packet));
+  int ret = recv(sock, &file_packet, DATA_CONTROLLER_HEADER_SIZE, 0);
+  file_packet.seq_no = ntohs(file_packet.seq_no);
+  LOG("Sendfile header received %d ", ret);
+  int filename_length = message.length_data - DATA_CONTROLLER_HEADER_SIZE;
+  char *file_name = malloc(filename_length);
+  ret = recv(sock, &file_name, filename_length, 0);
+  LOG("Filename %s\n", file_name);
+
+  //Open connection to nexthop
+  int nexthop_index = find_nexthop_by_ip(file_packet.dest_ip);
+  SOCKET nexthop_sock = socket(AF_INET, SOCK_STREAM, 0);
+  struct sockaddr_in in;
+  bzero(&in, sizeof(in));
+  in.sin_family = AF_INET;
+  in.sin_addr.s_addr = router_list[nexthop_index].ip;
+  in.sin_port = htons(router_list[nexthop_index].port_routing);
+  ret = connect(nexthop_sock, (struct sockaddr *)&in, sizeof(in));
+  check_error(ret, "Sendfile connect");
+
+  FILE *fp = fopen(file_name, "rb");
+  int eof=0;
+  char buffer[1024];
+  while(!eof && fread(buffer, CHUNK_SIZE, 1, fp))
+  {
+    if(feof(fp))
+    {
+      LOG("End of file\n");
+      file_packet.fin = 1;
+    }
+    memcpy(file_packet.payload, buffer, CHUNK_SIZE);
+    //TODO keep stats
+    send(nexthop_sock, &file_packet, sizeof(data_packet), 0);
+  }
 }

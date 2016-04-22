@@ -2,6 +2,7 @@
 #include "fd_impl.h"
 
 #define ROUTING_TABLE_UPDATE 8
+#define CHUNK_SIZE 1024
 
 SOCKET controller_server_accept(SOCKET sock);
 int control_message_receive(SOCKET sock);

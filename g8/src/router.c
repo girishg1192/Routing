@@ -1,6 +1,4 @@
 #include "router.h"
-int find_router_by_port_ip(uint16_t port, uint32_t ip);
-int find_index_by_id(uint16_t id);
 SOCKET start_router_data(int port)
 {
   return 0;
@@ -21,6 +19,7 @@ void router_data_receive(SOCKET sock)
   LOG("ROUTER: Received %d:%s->%x\n", ret, IP, addr.sin_addr.s_addr);
   //TODO handle actual routing and stuff
 }
+
 void router_control_receive(SOCKET sock)
 {
   struct sockaddr_in addr;
@@ -129,21 +128,5 @@ void router_send_updates()
     in.sin_port = htons(router_list[i].port_routing);
     sendto(sock, final, size, 0,
         (struct sockaddr *)&in, sizeof(in));
-  }
-}
-int find_router_by_port_ip(uint16_t port, uint32_t ip)
-{
-  for(int i=0; i<router_count; i++)
-  {
-    if(router_list[i].ip == ip && router_list[i].port_routing == port)
-      return i;
-  }
-}
-int find_index_by_id(uint16_t id)
-{
-  for(int i=0; i<router_count; i++)
-  {
-    if(router_list[i].id == id)
-      return i;
   }
 }

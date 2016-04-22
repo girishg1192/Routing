@@ -105,11 +105,21 @@ int main(int argc, char **argv)
     }
     if(FD_ISSET(router_data_sock, &temp))
     {
-      router_data_receive(router_data_sock);
+      //Router data is TCP
+      int sockfd = controller_server_accept(router_data_sock);
+      add_fd(sockfd);
     }
     if(FD_ISSET(router_control_sock, &temp))
     {
       router_control_receive(router_control_sock);
+    }
+    for(int fd = router_control_sock+1; fd<=active_sockets; fd++)
+    {
+      if(FD_ISSET(fd, &temp))
+      {
+        router_data_receive(fd);
+        //TODO clear FDs after reading status
+      }
     }
     temp = wait_fd;
     LOG("Ports %d %d\n", router_control_sock, router_data_sock);

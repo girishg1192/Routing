@@ -65,3 +65,28 @@ void print_buffer(char *data, int ret)
     LOG("%02x ", data[i]);
   }
 }
+//Find stuff in router_list
+int find_router_by_port_ip(uint16_t port, uint32_t ip)
+{
+  for(int i=0; i<router_count; i++)
+  {
+    if(router_list[i].ip == ip && router_list[i].port_routing == port)
+      return i;
+  }
+}
+int find_index_by_id(uint16_t id)
+{
+  for(int i=0; i<router_count; i++)
+  {
+    if(router_list[i].id == id)
+      return i;
+  }
+}
+int find_nexthop_by_ip(uint32_t ip)
+{
+  for(int i=0; i<router_count; i++)
+  {
+    if(router_list[i].ip == ip)
+      return router_list[i].nexthop_index;
+  }
+}

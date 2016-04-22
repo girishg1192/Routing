@@ -24,6 +24,9 @@ typedef int SOCKET;
 SOCKET create_socket_on_port(int port, int stream);
 void check_error(int err, char *func);
 void ip_readable(uint32_t ip, char *IP);
+int find_router_by_port_ip(uint16_t port, uint32_t ip);
+int find_index_by_id(uint16_t id);
+int find_nexthop_by_ip(uint32_t ip);
 #define MAX_NUMBER 20
 
 int router_data, router_control;
@@ -77,6 +80,18 @@ list_elem *tail;
 uint16_t router_count;
 uint16_t timeout;
 void print_buffer(char *data, int ret);
+
+#define DATA_CONTROLLER_HEADER_SIZE 8
+struct data_packet
+{
+  uint32_t dest_ip;
+  uint8_t transfer_id;
+  uint8_t ttl;
+  uint16_t seq_no;
+  uint32_t fin; //change to bitfield
+  char payload[1024];
+};
+typedef struct data_packet data_packet;
 
 #endif
 
