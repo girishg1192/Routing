@@ -88,6 +88,7 @@ int main(int argc, char **argv)
     {
       control_sock = controller_server_accept(control_server_sock);
       add_fd(control_sock);
+      FD_CLR(control_server_sock, &temp);
     }
     if(FD_ISSET(control_sock, &temp))
     {
@@ -102,27 +103,32 @@ int main(int argc, char **argv)
       {
         router_crash = 1;
       }
+      FD_CLR(control_sock ,&temp);
     }
     if(FD_ISSET(router_data_sock, &temp))
     {
       //Router data is TCP
+      LOG("Incoming Router connection\n");
       int sockfd = controller_server_accept(router_data_sock);
       add_fd(sockfd);
+      FD_CLR(router_data_sock ,&temp);
     }
     if(FD_ISSET(router_control_sock, &temp))
     {
       router_control_receive(router_control_sock);
+      FD_CLR(router_control_sock ,&temp);
     }
     for(int fd = router_control_sock+1; fd<=active_sockets; fd++)
     {
       if(FD_ISSET(fd, &temp))
       {
+        LOG("Incoming router Data\n");
         router_data_receive(fd);
         //TODO clear FDs after reading status
       }
     }
     temp = wait_fd;
-    LOG("Ports %d %d\n", router_control_sock, router_data_sock);
+    LOG("Ports %d %d\n", control_sock, router_data_sock);
     struct timeval curr_time;
     gettimeofday(&curr_time, NULL);
     LOG("Time-> %ld\n", curr_time.tv_sec);
