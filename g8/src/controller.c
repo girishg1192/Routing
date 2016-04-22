@@ -60,7 +60,6 @@ int control_message_receive(SOCKET sock)
                  crash_send(sock, message);
                  return CRASH;
                  break;
-                 //DATA PLANE!!!
     case SENDFILE:
                  start_sendfile(sock, message);
                  return SENDFILE;
@@ -224,24 +223,28 @@ void routing_table_send(SOCKET sock, control_message message)
 
 void start_sendfile(SOCKET sock, control_message message)
 {
+  char *temp = malloc(message.length_data);
+  char *cleanup = temp;
+  int ret = recv(sock, temp, message.length_data, 0);
   data_packet file_packet;
   memset(&file_packet, 0, sizeof(data_packet));
-  int ret = recv(sock, &file_packet, DATA_CONTROLLER_HEADER_SIZE, 0);
+  memcpy(&file_packet, temp, DATA_CONTROLLER_HEADER_SIZE);
+  temp = temp+ DATA_CONTROLLER_HEADER_SIZE;
   file_packet.seq_no = ntohs(file_packet.seq_no);
-  LOG("Sendfile header received %d ", ret);
+  LOG("Sendfile header received %d ", DATA_CONTROLLER_HEADER_SIZE);
   int filename_length = message.length_data - DATA_CONTROLLER_HEADER_SIZE;
-  char *file_name = malloc(filename_length);
-  ret = recv(sock, &file_name, filename_length, 0);
+  char *file_name = temp;
   LOG("Filename %s\n", file_name);
 
   //Open connection to nexthop
   int nexthop_index = find_nexthop_by_ip(file_packet.dest_ip);
+  LOG("Nexthop %d port %d\n", router_list[nexthop_index].id, router_list[nexthop_index].port_data);
   SOCKET nexthop_sock = socket(AF_INET, SOCK_STREAM, 0);
   struct sockaddr_in in;
   bzero(&in, sizeof(in));
   in.sin_family = AF_INET;
   in.sin_addr.s_addr = router_list[nexthop_index].ip;
-  in.sin_port = htons(router_list[nexthop_index].port_routing);
+  in.sin_port = htons(router_list[nexthop_index].port_data);
   ret = connect(nexthop_sock, (struct sockaddr *)&in, sizeof(in));
   check_error(ret, "Sendfile connect");
 
@@ -254,9 +257,11 @@ void start_sendfile(SOCKET sock, control_message message)
     {
       LOG("End of file\n");
       file_packet.fin = 1;
+      eof=1;
     }
     memcpy(file_packet.payload, buffer, CHUNK_SIZE);
     //TODO keep stats
     send(nexthop_sock, &file_packet, sizeof(data_packet), 0);
   }
+  free(cleanup);
 }

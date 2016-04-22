@@ -16,6 +16,11 @@ void router_data_receive(SOCKET sock)
                   (struct sockaddr *)&addr, &fromlen);
   char IP[INET_ADDRSTRLEN];
   ip_readable(addr.sin_addr.s_addr, IP);
+  if(ret==0)
+  {
+    clear_fd(sock);
+    close(sock);
+  }
   LOG("ROUTER: Received %d:%s->%x\n", ret, IP, addr.sin_addr.s_addr);
   //TODO handle actual routing and stuff
 }
