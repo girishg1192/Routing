@@ -1,4 +1,5 @@
 #include "controller.h"
+#include <unistd.h>
 #include "lists.h"
 
 void send_author(SOCKET sock, control_message response);
@@ -251,14 +252,18 @@ void start_sendfile(SOCKET sock, control_message message)
   FILE *fp = fopen(file_name, "rb");
   int eof=0;
   char buffer[1024];
-  while(!eof && fread(buffer, CHUNK_SIZE, 1, fp))
+  while(!eof)
   {
+    int bytes_sent = fread(buffer, CHUNK_SIZE, 1, fp);
+    LOG("bytes read? %d %d\n", bytes_sent, CHUNK_SIZE);
+    LOG("%s", buffer);
     if(feof(fp))
     {
       LOG("End of file\n");
       file_packet.fin = 1;
       eof=1;
     }
+    LOG("sendfile %d\n", sizeof(data_packet));
     memcpy(file_packet.payload, buffer, CHUNK_SIZE);
     //TODO keep stats
     send(nexthop_sock, &file_packet, sizeof(data_packet), 0);
