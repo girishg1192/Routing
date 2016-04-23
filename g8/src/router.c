@@ -33,12 +33,14 @@ void router_data_receive(SOCKET sock)
     incoming_packet->current= (incoming_packet->seq_no);
     memcpy(incoming_packet->current, &(buffer.seq_no), sizeof(uint16_t));
     incoming_packet->current +=sizeof(uint16_t);
+    incoming_packet->count++;
     insert_file(incoming_packet);
   }
   else
   {
     memcpy(incoming_packet->current, &(buffer.seq_no), sizeof(uint16_t));
     incoming_packet->current +=sizeof(uint16_t);
+    incoming_packet->count++;
     LOG("%s\n", incoming_packet->seq_no);
   }
   if(local_ip != buffer.dest_ip)

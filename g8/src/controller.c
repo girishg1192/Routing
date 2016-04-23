@@ -11,6 +11,7 @@ void crash_send(SOCKET sock, control_message response);
 void update_router(SOCKET sock, control_message response);
 void routing_table_send(SOCKET sock, control_message message);
 void start_sendfile(SOCKET sock, control_message message);
+void send_stats(SOCKET sock, control_message message);
 
 extern int router_data, router_control;
 extern int router_data_sock, router_control_sock;
@@ -65,6 +66,8 @@ int control_message_receive(SOCKET sock)
                  start_sendfile(sock, message);
                  return SENDFILE;
                  break;
+    case SENDFILE_STATS:
+                 send_stats(sock, message);
   }
   //TODO receive args?
 }
@@ -289,4 +292,24 @@ void start_sendfile(SOCKET sock, control_message message)
   send(sock, &message, sizeof(message), 0);
   free(cleanup);
   free(file_name);
+}
+void send_stats(SOCKET sock, control_message message)
+{
+  uint8_t transfer_id;
+  int ret = recv(sock, &transfer_id, message.length_data, 0);
+  file_stats* data = find_file_transfer_id(transfer_id);
+  if(data!=NULL)
+  {
+    int size = SENDFILE_STATS_HEADER + data->count*sizeof(uint16_t);
+    message.length_data = htons(size);
+    message.ip = get_peer_from_socket(sock);
+    message.response_time = 0;
+    send(sock, &message, sizeof(message), 0);
+    send(sock, data, size, 0);
+  }
+  else
+  {
+    message.length_data = 0;
+    send(sock, &message, sizeof(message), 0);
+  }
 }
