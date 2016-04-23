@@ -17,6 +17,7 @@ void router_data_receive(SOCKET sock)
   {
     clear_fd(sock);
     close(sock);
+    return;
   }
   LOG("ROUTER: Received %d:%s\n", ret, IP);
   if((--buffer.ttl)==0)
@@ -63,7 +64,7 @@ void router_data_receive(SOCKET sock)
     if(incoming_packet->fp==NULL)
     {
       char file_name[50];
-      sprintf(file_name, "file-%d", buffer.seq_no);
+      sprintf(file_name, "file-%d", buffer.transfer_id);
       incoming_packet->fp = fopen(file_name, "w+");
       perror("File open failed");
     }
