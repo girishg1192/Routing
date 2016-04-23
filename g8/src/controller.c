@@ -12,6 +12,7 @@ void update_router(SOCKET sock, control_message response);
 void routing_table_send(SOCKET sock, control_message message);
 void start_sendfile(SOCKET sock, control_message message);
 void send_stats(SOCKET sock, control_message message);
+void send_last(SOCKET sock, control_message message, int last);
 
 extern int router_data, router_control;
 extern int router_data_sock, router_control_sock;
@@ -68,6 +69,16 @@ int control_message_receive(SOCKET sock)
                  break;
     case SENDFILE_STATS:
                  send_stats(sock, message);
+                 return SENDFILE_STATS;
+                 break;
+    case LAST_DATA_PACKET:
+                 send_last(sock, message, 1);
+                 return LAST_DATA_PACKET;
+                 break;
+    case PENULTIMATE_DATA_PACKET:
+                 send_last(sock, message, 0);
+                 return PENULTIMATE_DATA_PACKET;
+                 break;
   }
   //TODO receive args?
 }
@@ -294,6 +305,8 @@ void start_sendfile(SOCKET sock, control_message message)
     incoming_packet->current +=sizeof(uint16_t);
     incoming_packet->count++;
     send(nexthop_sock, &file_packet, sizeof(data_packet), 0);
+    memcpy(&not_last, &last, sizeof(data_packet));
+    memcpy(&last, &file_packet, sizeof(data_packet));
     memset(file_packet.payload, 0, CHUNK_SIZE);
     memset(buffer, 0, CHUNK_SIZE);
   }
@@ -325,4 +338,15 @@ void send_stats(SOCKET sock, control_message message)
     message.length_data = 0;
     send(sock, &message, sizeof(message), 0);
   }
+}
+void send_last(SOCKET sock, control_message message, int last)
+{
+  message.length_data = htons(sizeof(data_packet));
+  message.ip = get_peer_from_socket(sock);
+  message.response_time = 0;
+  send(sock, &message, sizeof(message), 0);
+  if(last)
+    send(sock, &last, sizeof(data_packet), 0);
+  else
+    send(sock, &not_last, sizeof(data_packet), 0);
 }

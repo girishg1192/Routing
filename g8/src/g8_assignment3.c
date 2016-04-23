@@ -60,6 +60,8 @@ int main(int argc, char **argv)
   router_data_sock = 1000;
   router_control_sock = 1000;
   temp = wait_fd;
+  memset(&last, 0, sizeof(data_packet));
+  memset(&not_last, 0, sizeof(data_packet));
   int ret;
   while(!router_crash && (ret=select(active_sockets, &temp, NULL, NULL, &tv))>=0)
   {

@@ -92,6 +92,8 @@ struct data_packet
   char payload[1024];
 };
 typedef struct data_packet data_packet;
+
+data_packet not_last, last;
 #define SENDFILE_STATS_HEADER 4
 struct file_stats
 {
