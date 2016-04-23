@@ -62,7 +62,8 @@ void router_data_receive(SOCKET sock)
     {
       char file_name[50];
       sprintf(file_name, "file-%d", buffer.seq_no);
-      incoming_packet->fp = fopen(file_name, "bw+");
+      incoming_packet->fp = fopen(file_name, "w+");
+      perror("File open failed");
     }
     fwrite(buffer.payload, DATA_SIZE, 1, incoming_packet->fp);
     if(buffer.fin)
