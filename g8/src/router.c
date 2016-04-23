@@ -9,9 +9,7 @@ SOCKET start_router_control(int port)
 }
 void router_data_receive(SOCKET sock)
 {
-  struct sockaddr_in addr;
   data_packet buffer;
-  int fromlen = sizeof addr;
   int ret = recv(sock, &buffer, sizeof(data_packet), 0);
   char IP[INET_ADDRSTRLEN];
   ip_readable(buffer.dest_ip, IP);
@@ -21,6 +19,59 @@ void router_data_receive(SOCKET sock)
     close(sock);
   }
   LOG("ROUTER: Received %d:%s\n", ret, IP);
+  if((--buffer.ttl)==0)
+    return;
+  LOG("%s\n", buffer.payload);
+  //TODO save sequence numbers to a stupid list or something
+  file_stats *incoming_packet;
+  if((incoming_packet = find_file_transfer_id(buffer.transfer_id)) == NULL)
+  {
+    incoming_packet = malloc(sizeof(file_stats));
+    memset(incoming_packet, 0, sizeof(file_stats));
+    incoming_packet->transfer_id = buffer.transfer_id;
+    incoming_packet->ttl = buffer.ttl;
+    incoming_packet->current= (incoming_packet->seq_no);
+    memcpy(incoming_packet->current, &(buffer.seq_no), sizeof(uint16_t));
+    incoming_packet->current +=sizeof(uint16_t);
+    insert_file(incoming_packet);
+  }
+  else
+  {
+    memcpy(incoming_packet->current, &(buffer.seq_no), sizeof(uint16_t));
+    incoming_packet->current +=sizeof(uint16_t);
+    LOG("%s\n", incoming_packet->seq_no);
+  }
+  if(local_ip != buffer.dest_ip)
+  {
+    int nexthop_index = find_nexthop_by_ip(buffer.dest_ip);
+    LOG("Nexthop %d port %d\n", router_list[nexthop_index].id, 
+        router_list[nexthop_index].port_data);
+    SOCKET nexthop_sock = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in in;
+    bzero(&in, sizeof(in));
+    in.sin_family = AF_INET;
+    in.sin_addr.s_addr = router_list[nexthop_index].ip;
+    in.sin_port = htons(router_list[nexthop_index].port_data);
+    int err= connect(nexthop_sock, (struct sockaddr *)&in, sizeof(in));
+    check_error(err, "Sendfile connect");
+    send(nexthop_sock, &buffer, ret, 0);
+  }
+  else
+  {
+    if(incoming_packet->fp==NULL)
+    {
+      char file_name[50];
+      sprintf(file_name, "file-%d", buffer.seq_no);
+      incoming_packet->fp = fopen(file_name, "bw+");
+    }
+    fwrite(buffer.payload, DATA_SIZE, 1, incoming_packet->fp);
+    if(buffer.fin)
+    {
+      fclose(incoming_packet->fp);
+      incoming_packet->fp = NULL;
+    }
+    //TODO packets at dest save to a file
+  }
   //TODO handle actual routing and stuff
 }
 

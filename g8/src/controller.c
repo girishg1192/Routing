@@ -231,6 +231,11 @@ void start_sendfile(SOCKET sock, control_message message)
   memset(&file_packet, 0, sizeof(data_packet));
   memcpy(&file_packet, temp, DATA_CONTROLLER_HEADER_SIZE);
   temp = temp+ DATA_CONTROLLER_HEADER_SIZE;
+  int xfer_id = file_packet.transfer_id;
+  file_packet.transfer_id = file_packet.ttl;
+  file_packet.ttl = xfer_id;
+  if(file_packet.ttl==0);
+    //TODO do not send packet
   file_packet.seq_no = ntohs(file_packet.seq_no);
   LOG("Sendfile header received %d ", DATA_CONTROLLER_HEADER_SIZE);
   int filename_length = message.length_data - DATA_CONTROLLER_HEADER_SIZE;

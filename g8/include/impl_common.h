@@ -92,6 +92,17 @@ struct data_packet
   char payload[1024];
 };
 typedef struct data_packet data_packet;
+struct file_stats
+{
+  uint8_t transfer_id;
+  uint8_t ttl;
+  uint16_t padding;
+  char seq_no[20];
+  char *current;
+  FILE *fp;
+  struct file_stats *next;
+};
+typedef struct file_stats file_stats;
 
 #endif
 

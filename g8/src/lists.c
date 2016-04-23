@@ -104,3 +104,27 @@ uint32_t update_timeout()
   uint32_t ret = get_next_timeout();
   return ret;
 }
+
+file_stats* find_file_transfer_id(uint8_t tfer_id)
+{
+  file_stats *res;
+  if(stats_list==NULL)
+    return stats_list;
+  for(res = stats_list; res!=NULL; res=res->next)
+  {
+    if(res->transfer_id == tfer_id)
+      break;
+  }
+  return res;
+}
+void insert_file(file_stats *new)
+{
+  if(stats_list==NULL)
+  {
+    stats_list = new;
+    new->next=NULL;
+    return;
+  }
+  new->next = stats_list;
+  stats_list = new;
+}
