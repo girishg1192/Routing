@@ -265,9 +265,6 @@ void start_sendfile(SOCKET sock, control_message message)
   incoming_packet->transfer_id = file_packet.transfer_id;
   incoming_packet->ttl = file_packet.ttl;
   incoming_packet->current= (incoming_packet->seq_no);
-  memcpy(incoming_packet->current, &(file_packet.seq_no), sizeof(uint16_t));
-  incoming_packet->current +=sizeof(uint16_t);
-  incoming_packet->count++;
   insert_file(incoming_packet);
 
   FILE *fp = fopen(file_name, "rb");
