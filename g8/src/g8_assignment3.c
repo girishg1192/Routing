@@ -101,14 +101,12 @@ int main(int argc, char **argv)
         tv.tv_sec = timeout;
       }
       else if(code==4)
-      {
         router_crash = 1;
-      }
-      else if(code == -1)
-      {
-        control_sock = 1000; 
-      }
+
       FD_CLR(control_sock ,&temp);
+
+      if(code == -1)
+        control_sock = 1000; 
     }
     if(FD_ISSET(router_data_sock, &temp))
     {
