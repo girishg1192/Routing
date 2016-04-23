@@ -305,8 +305,8 @@ void start_sendfile(SOCKET sock, control_message message)
     incoming_packet->current +=sizeof(uint16_t);
     incoming_packet->count++;
     send(nexthop_sock, &file_packet, sizeof(data_packet), 0);
-    memcpy(&not_last, &last, sizeof(data_packet));
-    memcpy(&last, &file_packet, sizeof(data_packet));
+    memcpy(&not_last, &last_packet, sizeof(data_packet));
+    memcpy(&last_packet, &file_packet, sizeof(data_packet));
     memset(file_packet.payload, 0, CHUNK_SIZE);
     memset(buffer, 0, CHUNK_SIZE);
   }
@@ -346,7 +346,7 @@ void send_last(SOCKET sock, control_message message, int last)
   message.response_time = 0;
   send(sock, &message, sizeof(message), 0);
   if(last)
-    send(sock, &last, sizeof(data_packet), 0);
+    send(sock, &last_packet, sizeof(data_packet), 0);
   else
     send(sock, &not_last, sizeof(data_packet), 0);
 }

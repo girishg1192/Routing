@@ -93,7 +93,7 @@ struct data_packet
 };
 typedef struct data_packet data_packet;
 
-data_packet not_last, last;
+data_packet not_last, last_packet;
 #define SENDFILE_STATS_HEADER 4
 struct file_stats
 {

@@ -58,8 +58,8 @@ void router_data_receive(SOCKET sock)
     int err= connect(nexthop_sock, (struct sockaddr *)&in, sizeof(in));
     check_error(err, "Sendfile connect");
     send(nexthop_sock, &buffer, ret, 0);
-    memcpy(&not_last, &last, sizeof(data_packet));
-    memcpy(&last, &buffer, sizeof(data_packet));
+    memcpy(&not_last, &last_packet, sizeof(data_packet));
+    memcpy(&last_packet, &buffer, sizeof(data_packet));
   }
   else
   {
