@@ -237,9 +237,10 @@ void start_sendfile(SOCKET sock, control_message message)
   if(file_packet.ttl==0);
     //TODO do not send packet
   file_packet.seq_no = ntohs(file_packet.seq_no);
-  LOG("Sendfile header received %d ", DATA_CONTROLLER_HEADER_SIZE);
-  int filename_length = message.length_data - DATA_CONTROLLER_HEADER_SIZE;
-  char *file_name = malloc(filename_length);
+  LOG("Sendfile header received %d %d ", DATA_CONTROLLER_HEADER_SIZE, ntohs(message.length_data));
+  int filename_length = ntohs(message.length_data) - DATA_CONTROLLER_HEADER_SIZE;
+  char *file_name = malloc(filename_length+1);
+  memset(file_name, 0, filename_length+1);
   memcpy(file_name, temp, filename_length);
   LOG("Filename %s\n", file_name);
 
@@ -278,6 +279,8 @@ void start_sendfile(SOCKET sock, control_message message)
     memcpy(file_packet.payload, buffer, CHUNK_SIZE);
     //TODO keep stats
     send(nexthop_sock, &file_packet, sizeof(data_packet), 0);
+    memset(file_packet.payload, 0, CHUNK_SIZE);
+    memset(buffer, 0, CHUNK_SIZE);
   }
   error:
   message.ip = get_peer_from_socket(sock);
