@@ -260,6 +260,16 @@ void start_sendfile(SOCKET sock, control_message message)
   ret = connect(nexthop_sock, (struct sockaddr *)&in, sizeof(in));
   check_error(ret, "Sendfile connect");
 
+  file_stats *incoming_packet = malloc(sizeof(file_stats));
+  memset(incoming_packet, 0, sizeof(file_stats));
+  incoming_packet->transfer_id = file_packet.transfer_id;
+  incoming_packet->ttl = file_packet.ttl;
+  incoming_packet->current= (incoming_packet->seq_no);
+  memcpy(incoming_packet->current, &(file_packet.seq_no), sizeof(uint16_t));
+  incoming_packet->current +=sizeof(uint16_t);
+  incoming_packet->count++;
+  insert_file(incoming_packet);
+
   FILE *fp = fopen(file_name, "rb");
   int eof=0;
   char buffer[1024];
@@ -283,6 +293,9 @@ void start_sendfile(SOCKET sock, control_message message)
     memcpy(file_packet.payload, buffer, CHUNK_SIZE);
     //TODO keep stats
     file_packet.seq_no = htons(sequence++);
+    memcpy(incoming_packet->current, &(file_packet.seq_no), sizeof(uint16_t));
+    incoming_packet->current +=sizeof(uint16_t);
+    incoming_packet->count++;
     send(nexthop_sock, &file_packet, sizeof(data_packet), 0);
     memset(file_packet.payload, 0, CHUNK_SIZE);
     memset(buffer, 0, CHUNK_SIZE);
