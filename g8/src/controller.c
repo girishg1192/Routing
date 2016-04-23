@@ -239,7 +239,8 @@ void start_sendfile(SOCKET sock, control_message message)
   file_packet.seq_no = ntohs(file_packet.seq_no);
   LOG("Sendfile header received %d ", DATA_CONTROLLER_HEADER_SIZE);
   int filename_length = message.length_data - DATA_CONTROLLER_HEADER_SIZE;
-  char *file_name = temp;
+  char *file_name = malloc(filename_length);
+  memcpy(file_name, temp, filename_length);
   LOG("Filename %s\n", file_name);
 
   //Open connection to nexthop
@@ -278,4 +279,5 @@ void start_sendfile(SOCKET sock, control_message message)
   message.length_data = 0;
   send(sock, &message, sizeof(message), 0);
   free(cleanup);
+  free(file_name);
 }
