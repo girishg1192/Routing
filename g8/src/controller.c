@@ -258,6 +258,11 @@ void start_sendfile(SOCKET sock, control_message message)
   FILE *fp = fopen(file_name, "rb");
   int eof=0;
   char buffer[1024];
+  if(fp==NULL)
+  {
+    perror("file open");
+    goto error;
+  }
   while(!eof)
   {
     int bytes_sent = fread(buffer, CHUNK_SIZE, 1, fp);
@@ -274,6 +279,7 @@ void start_sendfile(SOCKET sock, control_message message)
     //TODO keep stats
     send(nexthop_sock, &file_packet, sizeof(data_packet), 0);
   }
+  error:
   message.ip = get_peer_from_socket(sock);
   message.response_time = 0;
   message.length_data = 0;
