@@ -227,6 +227,7 @@ void routing_table_send(SOCKET sock, control_message message)
 
 void start_sendfile(SOCKET sock, control_message message)
 {
+  uint16_t sequence;
   char *temp = malloc(message.length_data);
   char *cleanup = temp;
   int ret = recv(sock, temp, message.length_data, 0);
@@ -239,7 +240,7 @@ void start_sendfile(SOCKET sock, control_message message)
   file_packet.ttl = xfer_id;
   if(file_packet.ttl==0);
     //TODO do not send packet
-  file_packet.seq_no = ntohs(file_packet.seq_no);
+  sequence = ntohs(file_packet.seq_no);
   LOG("Sendfile header received %d %d ", DATA_CONTROLLER_HEADER_SIZE, ntohs(message.length_data));
   int filename_length = ntohs(message.length_data) - DATA_CONTROLLER_HEADER_SIZE;
   char *file_name = malloc(filename_length+1);
@@ -281,10 +282,12 @@ void start_sendfile(SOCKET sock, control_message message)
     LOG("sendfile %d\n", sizeof(data_packet));
     memcpy(file_packet.payload, buffer, CHUNK_SIZE);
     //TODO keep stats
+    file_packet.seq_no = htons(sequence++);
     send(nexthop_sock, &file_packet, sizeof(data_packet), 0);
     memset(file_packet.payload, 0, CHUNK_SIZE);
     memset(buffer, 0, CHUNK_SIZE);
   }
+  close(nexthop_sock);
   error:
   message.ip = get_peer_from_socket(sock);
   message.response_time = 0;
