@@ -273,5 +273,9 @@ void start_sendfile(SOCKET sock, control_message message)
     //TODO keep stats
     send(nexthop_sock, &file_packet, sizeof(data_packet), 0);
   }
+  message.ip = get_peer_from_socket(sock);
+  message.response_time = 0;
+  message.length_data = 0;
+  send(sock, &message, sizeof(message), 0);
   free(cleanup);
 }
