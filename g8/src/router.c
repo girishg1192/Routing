@@ -190,4 +190,5 @@ void router_send_updates()
     sendto(sock, final, size, 0,
         (struct sockaddr *)&in, sizeof(in));
   }
+  free(final);
 }
