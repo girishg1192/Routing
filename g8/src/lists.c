@@ -61,9 +61,9 @@ void update_start()
   memset(updates, 0, sizeof(timer_elem));
   updates->update = true;
   updates->failures = 0;
-  struct timeval curr_time;
-  gettimeofday(&curr_time, NULL);
-  updates->timeout = curr_time.tv_sec + timeout;
+  gettimeofday(&(updates->timeout), NULL);
+  updates->timeout.tv_sec+= timeout;
+  //TODO add timeout
   list_push(updates);
 }
 void print_router_list()
@@ -77,32 +77,34 @@ void print_router_list()
         router_list[i].cost, IP, router_list[i].neighbour);
   }
 }
-uint32_t get_next_timeout()
+struct timeval get_next_timeout()
 {
+  struct timeval null;
+  memset(&null, 0, sizeof(struct timeval));
   if(!init)
-    return -1;
+  {
+    //return NULL
+    LOG("Not init\n");
+    return null;
+  }
   timer_elem *check;
   check = list_peek();
   if(check == NULL)
-    return -1;
-  uint32_t ret=check->timeout;
-  struct timeval curr_time;
-  gettimeofday(&curr_time, NULL);
-  //check->timeout = curr_time.tv_sec + timeout;
-  ret = ret - curr_time.tv_sec;
-  //list_push(check);
-  return ret;
+  {
+    //return NULL or something
+    return null;
+  }
+  return check->timeout;
 }
-uint32_t update_timeout()
+struct timeval update_timeout()
 {
   if(list_peek()!=NULL)
   {
     timer_elem *update = list_pop();
-    update->timeout = update->timeout + timeout;
+    update->timeout.tv_sec += timeout;
     list_push(update);
   }
-  uint32_t ret = get_next_timeout();
-  return ret;
+  return get_next_timeout();
 }
 
 file_stats* find_file_transfer_id(uint8_t tfer_id)

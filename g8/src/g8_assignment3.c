@@ -75,16 +75,18 @@ int main(int argc, char **argv)
         //Update failure for neighbours
       }
       //Push back to queue
-      int time_update = update_timeout();
-      
+      tv = update_timeout();
       //Next timeout calculation
-      if(time_update>=0)
+      if(tv.tv_sec ==0 && tv.tv_usec ==0)
       {
-        tv.tv_sec = time_update;
-        //Timeout code
+        tv.tv_sec = 10;
       }
       else
-        tv.tv_sec = 10;
+      {
+        struct timeval curr_time;
+        gettimeofday(&curr_time, NULL);
+        timersub(&tv, &curr_time, &tv);
+      }
     }
     if(FD_ISSET(control_server_sock, &temp))
     {

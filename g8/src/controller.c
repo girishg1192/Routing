@@ -147,7 +147,14 @@ void init_vectors(SOCKET sock, control_message header)
     router_list[i].nexthop_index = i;
     router_list[i].neighbour = false;
     if(router_list[i].cost!=UINT16_T_MAX && router_list[i].cost!=0)
+    {
       router_list[i].neighbour = true;
+      struct timer_elem *in = malloc(sizeof(struct timer_elem));
+      memset(in, 0, sizeof(struct timer_elem));
+      in->port = router_list[i].port_routing;
+      in->ip = router_list[i].ip;
+      list_push(in);
+    }
     if(router_list[i].cost == 0)
     {
       local_ip = router_list[i].ip;

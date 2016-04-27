@@ -51,7 +51,7 @@ struct router_info
 typedef struct router_info router_info;
 struct timer_elem
 {
-  uint32_t timeout;
+  struct timeval timeout;
   uint32_t ip;
   uint16_t port;
   bool update;
