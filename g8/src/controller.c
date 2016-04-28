@@ -149,11 +149,13 @@ void init_vectors(SOCKET sock, control_message header)
     if(router_list[i].cost!=UINT16_T_MAX && router_list[i].cost!=0)
     {
       router_list[i].neighbour = true;
+#if HANDLE_WHEN_ROUTER_RECEIVES_DATA
       struct timer_elem *in = malloc(sizeof(struct timer_elem));
       memset(in, 0, sizeof(struct timer_elem));
       in->port = router_list[i].port_routing;
       in->ip = router_list[i].ip;
       list_push(in);
+#endif
     }
     if(router_list[i].cost == 0)
     {
