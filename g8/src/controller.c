@@ -342,7 +342,9 @@ void send_stats(SOCKET sock, control_message message)
   }
   else
   {
+    message.ip = get_peer_from_socket(sock);
     message.length_data = 0;
+    message.response_time = 0;
     send(sock, &message, sizeof(message), 0);
   }
 }
