@@ -87,7 +87,7 @@ void send_author(SOCKET sock, control_message response)
   char author[] = "I, g8, have read and understood the course academic integrity policy.";
 
   response.ip = get_peer_from_socket(sock);
-  uint16_t payload_length = sizeof(author);
+  uint16_t payload_length = sizeof(author)-1;
 
   response.response_time = 0;
   response.length_data = htons(payload_length);
@@ -99,7 +99,7 @@ void send_author(SOCKET sock, control_message response)
   copy = copy+sizeof(response);
   memcpy(copy, author, strlen(author));
 
-  send(sock, res, sizeof(author)+sizeof(response), 0);
+  send(sock, res, sizeof(author)+sizeof(response)-1, 0);
   free(res);
 }
 void init_vectors(SOCKET sock, control_message header)
