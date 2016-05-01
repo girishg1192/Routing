@@ -302,7 +302,7 @@ void start_sendfile(SOCKET sock, control_message message)
   {
     file_size-=CHUNK_SIZE;
     LOG("bytes remaining? %d %d\n", file_size, CHUNK_SIZE);
-    LOG("%s", buffer);
+    //LOG("%s", buffer);
     if(file_size==0)
     {
       LOG("End of file\n");

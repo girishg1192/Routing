@@ -22,7 +22,7 @@ void router_data_receive(SOCKET sock)
   LOG("ROUTER: Received %d:%s\n", ret, IP);
   if((--buffer.ttl)==0)
     return;
-  LOG("%s\n", buffer.payload);
+ // LOG("%s\n", buffer.payload);
   //TODO save sequence numbers to a stupid list or something
   file_stats *incoming_packet;
   if((incoming_packet = find_file_transfer_id(buffer.transfer_id)) == NULL)
