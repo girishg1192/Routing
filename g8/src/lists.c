@@ -52,6 +52,18 @@ timer_elem* list_peek()
     return NULL;
   return timeout_list_head;
 }
+timer_elem* find_timeout_by_ip(uint32_t ip)
+{
+  if(timeout_list_head==NULL)
+    return NULL;
+  timer_elem *temp=timeout_list_head;
+  while(temp!=NULL)
+  {
+    if(temp->ip == ip)
+      return temp;
+  }
+  return NULL;
+}
 void update_start()
 {
   if(init)

@@ -9,6 +9,7 @@ void update_start();
 void print_router_list();
 struct timeval get_next_timeout();
 struct timeval update_timeout();
+timer_elem* find_timeout_by_ip(uint32_t ip);
 
 file_stats *stats_list;
 file_stats *find_file_transfer_id(uint8_t);

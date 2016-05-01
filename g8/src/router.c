@@ -94,11 +94,12 @@ void router_control_receive(SOCKET sock)
   LOG("ROUTER Control: Received %d:%s->%x\n", ret, IP, addr.sin_addr.s_addr);
 
 #if HANDLE_WHEN_ROUTER_RECEIVES_DATA
-  struct timer_elem *in = malloc(sizeof(struct timer_elem));
-  memset(in, 0, sizeof(struct timer_elem));
-  in->port = router_list[i].port_routing;
-  in->ip = router_list[i].ip;
-  list_push(in);
+  if(find_timeout_by_ip(addr.sin_addr.s_addr)==NULL)
+  {
+    struct timer_elem *in = malloc(sizeof(struct timer_elem));
+    memset(in, 0, sizeof(struct timer_elem));
+    list_push(in);
+  }
 #endif
 
   uint16_t count;
