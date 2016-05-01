@@ -93,6 +93,14 @@ void router_control_receive(SOCKET sock)
   ip_readable(addr.sin_addr.s_addr, IP);
   LOG("ROUTER Control: Received %d:%s->%x\n", ret, IP, addr.sin_addr.s_addr);
 
+#if HANDLE_WHEN_ROUTER_RECEIVES_DATA
+  struct timer_elem *in = malloc(sizeof(struct timer_elem));
+  memset(in, 0, sizeof(struct timer_elem));
+  in->port = router_list[i].port_routing;
+  in->ip = router_list[i].ip;
+  list_push(in);
+#endif
+
   uint16_t count;
   memcpy(&count, buffer, sizeof(uint16_t));
   count = ntohs(count);
@@ -119,7 +127,7 @@ void router_control_receive(SOCKET sock)
     uint16_t port;
     memcpy(&port, buffer, sizeof(uint16_t));
     buffer = buffer + sizeof(uint32_t);
-    
+
     uint16_t router_id, router_cost;
     memcpy(&router_id, buffer, sizeof(uint16_t));
     router_id = ntohs(router_id);

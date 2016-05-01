@@ -149,13 +149,6 @@ void init_vectors(SOCKET sock, control_message header)
     if(router_list[i].cost!=UINT16_T_MAX && router_list[i].cost!=0)
     {
       router_list[i].neighbour = true;
-#if HANDLE_WHEN_ROUTER_RECEIVES_DATA
-      struct timer_elem *in = malloc(sizeof(struct timer_elem));
-      memset(in, 0, sizeof(struct timer_elem));
-      in->port = router_list[i].port_routing;
-      in->ip = router_list[i].ip;
-      list_push(in);
-#endif
     }
     if(router_list[i].cost == 0)
     {
@@ -205,9 +198,18 @@ void update_router(SOCKET sock, control_message response)
   router_cost = ntohs(router_cost);
   data = data+sizeof(uint16_t);
   int i = find_index_by_id(router_id);
+  int old_cost = router_list[i].cost;
   router_list[i].cost = router_cost;
   LOG("Update router %d %d %x to %d", router_list[i].id, 
       router_list[i].port_routing, router_list[i].ip, router_cost);
+  //Update nodes Distance vector
+  for(int i=0; i<router_count; i++)
+  {
+    if(router_list[i].nexthop_id == router_id)
+    {
+      router_list[i].cost = router_list[i].cost - old_cost + router_cost;
+    }
+  }
 
   response.ip = get_peer_from_socket(sock);
   response.response_time = 0;
