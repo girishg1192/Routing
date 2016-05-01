@@ -77,6 +77,7 @@ int main(int argc, char **argv)
       //Push back to queue
       tv = update_timeout();
       //Next timeout calculation
+#ifdef TIMEOUT_FUNC
       if(tv.tv_sec ==0 && tv.tv_usec ==0)
       {
         tv.tv_sec = 10;
@@ -87,6 +88,9 @@ int main(int argc, char **argv)
         gettimeofday(&curr_time, NULL);
         timersub(&tv, &curr_time, &tv);
       }
+#else
+      tv = check_and_set_timer(tv);
+#endif
     }
     if(FD_ISSET(control_server_sock, &temp))
     {
@@ -123,6 +127,11 @@ int main(int argc, char **argv)
     if(FD_ISSET(router_control_sock, &temp))
     {
       router_control_receive(router_control_sock);
+      //get next timeout after control receive
+      tv = get_next_timeout();
+      struct timeval curr_time;
+      gettimeofday(&curr_time, NULL);
+      timersub(&tv, &curr_time, &tv);
       FD_CLR(router_control_sock ,&temp);
     }
     for(int fd = 2; fd<=active_sockets; fd++)

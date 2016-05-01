@@ -74,6 +74,14 @@ int find_router_by_port_ip(uint16_t port, uint32_t ip)
       return i;
   }
 }
+int find_router_by_ip(uint32_t ip)
+{
+  for(int i=0; i<router_count; i++)
+  {
+    if(router_list[i].ip == ip)
+      return i;
+  }
+}
 int find_index_by_id(uint16_t id)
 {
   for(int i=0; i<router_count; i++)
@@ -89,4 +97,18 @@ int find_nexthop_by_ip(uint32_t ip)
     if(router_list[i].ip == ip)
       return router_list[i].nexthop_index;
   }
+}
+struct timeval check_and_set_timer(struct timeval tv)
+{
+  if(tv.tv_sec ==0 && tv.tv_usec ==0)
+  {
+    //Do nothing?
+  }
+  else
+  {
+    struct timeval curr_time;
+    gettimeofday(&curr_time, NULL);
+    timersub(&tv, &curr_time, &tv);
+  }
+  return tv;
 }

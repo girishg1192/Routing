@@ -52,6 +52,23 @@ timer_elem* list_peek()
     return NULL;
   return timeout_list_head;
 }
+void list_remove(timer_elem *temp)
+{
+  if(temp==NULL)
+    return;
+  if(temp==timeout_list_head)
+  {
+    list_pop();
+  }
+  else if(temp==timeout_list_tail)
+  {
+    timer_elem *prev = temp->prev;
+    temp->prev = NULL;
+    temp->next = NULL;
+    prev->next = NULL;
+    timeout_list_tail = prev;
+  }
+}
 timer_elem* find_timeout_by_ip(uint32_t ip)
 {
   if(timeout_list_head==NULL)

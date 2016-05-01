@@ -94,11 +94,24 @@ void router_control_receive(SOCKET sock)
   LOG("ROUTER Control: Received %d:%s->%x\n", ret, IP, addr.sin_addr.s_addr);
 
 #if HANDLE_WHEN_ROUTER_RECEIVES_DATA
-  if(find_timeout_by_ip(addr.sin_addr.s_addr)==NULL)
+  if(timer_elem *temp = (find_timeout_by_ip(addr.sin_addr.s_addr))==NULL)
   {
     struct timer_elem *in = malloc(sizeof(struct timer_elem));
     memset(in, 0, sizeof(struct timer_elem));
+    int index = find_router_by_ip(addr.sin_addr.s_addr);
+    in->ip = router_list[i].ip;
+    in->port = router_list[i].port_routing;
+    gettimeofday(&(in->timeout), NULL);
+    int->timeout.tv_sec += timeout;
     list_push(in);
+  }
+  else
+  {
+    list_remove(temp);
+    gettimeofday(&(temp->timeout), NULL);
+    temp->timeout.tv_sec += timeout;
+    temp->failures = 0;
+    list_push(temp);
   }
 #endif
 

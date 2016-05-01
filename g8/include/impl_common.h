@@ -25,6 +25,7 @@ SOCKET create_socket_on_port(int port, int stream);
 void check_error(int err, char *func);
 void ip_readable(uint32_t ip, char *IP);
 int find_router_by_port_ip(uint16_t port, uint32_t ip);
+int find_router_by_ip(uint32_t ip);
 int find_index_by_id(uint16_t id);
 int find_nexthop_by_ip(uint32_t ip);
 #define MAX_NUMBER 20
@@ -107,6 +108,7 @@ struct file_stats
   struct file_stats *next;
 };
 typedef struct file_stats file_stats;
+struct timeval check_and_set_timer(struct timeval tv);
 
 #endif
 
