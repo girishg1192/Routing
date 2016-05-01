@@ -295,12 +295,15 @@ void start_sendfile(SOCKET sock, control_message message)
     perror("file open");
     goto error;
   }
-  while(!eof)
+  fseek(fp, 0, SEEK_END);
+  int file_size = ftell(fp);
+  rewind(fp);
+  while(fread(buffer, CHUNK_SIZE, 1, fp))
   {
-    int bytes_sent = fread(buffer, CHUNK_SIZE, 1, fp);
-    LOG("bytes read? %d %d\n", bytes_sent, CHUNK_SIZE);
+    file_size-=CHUNK_SIZE;
+    LOG("bytes remaining? %d %d\n", file_size, CHUNK_SIZE);
     LOG("%s", buffer);
-    if(feof(fp))
+    if(file_size==0)
     {
       LOG("End of file\n");
       file_packet.fin = 1;
