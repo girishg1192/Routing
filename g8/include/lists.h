@@ -5,6 +5,7 @@ void list_init();
 void list_push(timer_elem *node);
 timer_elem* list_peek();
 timer_elem* list_pop();
+void list_remove(timer_elem *temp);
 void update_start();
 void print_router_list();
 struct timeval get_next_timeout();
