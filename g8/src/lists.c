@@ -26,6 +26,11 @@ void list_push(timer_elem *node)
 void list_insert_ordered(timer_elem *node)
 {
   timer_elem *a;
+  if(timeout_list_head==NULL)
+  {
+    list_push(node);
+    return;
+  }
   for(a = timeout_list_head; a!=NULL; a=a->next)
   {
     if(timercmp(&(a->timeout), &(node->timeout), >))
@@ -46,10 +51,7 @@ void list_insert_ordered(timer_elem *node)
       return;
     }
   }
-  node->prev = timeout_list_tail;
-  timeout_list_tail->next = node;
-  node->next = NULL;
-  timeout_list_tail = node;
+  list_push(node);
 }
 timer_elem* list_pop()
 {

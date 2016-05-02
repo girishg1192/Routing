@@ -68,6 +68,7 @@ int main(int argc, char **argv)
     if(ret==0)
     {
       struct timeval curr_time;
+      int failed=0;
       do
       {
         timer_elem *curr = list_peek();
@@ -87,12 +88,16 @@ int main(int argc, char **argv)
             LOG("Router %d %d Failed", router_list[failed_index].id, 
                 router_list[failed_index].cost);
             router_list[failed_index].cost = UINT16_T_MAX;
-            list_remove(curr);
+            list_pop();
+            failed=1;
           }
         }
         //Push back to queue
         gettimeofday(&curr_time, NULL);
-        tv = update_timeout();
+        if(!failed)
+          tv = update_timeout();
+        else
+          tv = get_next_timeout();
       }while(curr_time.tv_sec == tv.tv_sec);
 
       //Next timeout calculation
