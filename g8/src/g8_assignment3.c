@@ -67,27 +67,34 @@ int main(int argc, char **argv)
   {
     if(ret==0)
     {
-      timer_elem *curr = list_peek();
-      if(curr!=NULL && curr->update)
-        router_send_updates();
-      else
+      struct timeval curr_time;
+      do
       {
         timer_elem *curr = list_peek();
-        //Update failure for neighbours
-        LOG("Something failed %x %d %d times\n", curr->ip, curr->port,
-            curr->failures);
-        curr->failures++;
-        if(curr->failures==3)
+        if(curr!=NULL && curr->update)
+          router_send_updates();
+        else
         {
-          LOG("Node crashed\n");
-          int failed_index = find_router_by_ip(curr->ip);
-          LOG("Router %d %d Failed", router_list[failed_index].id, 
-              router_list[failed_index].cost);
-          router_list[failed_index].cost = UINT16_T_MAX;
+          timer_elem *curr = list_peek();
+          //Update failure for neighbours
+          LOG("Something failed %x %d %d times\n", curr->ip, curr->port,
+              curr->failures);
+          curr->failures++;
+          if(curr->failures==3)
+          {
+            LOG("Node crashed\n");
+            int failed_index = find_router_by_ip(curr->ip);
+            LOG("Router %d %d Failed", router_list[failed_index].id, 
+                router_list[failed_index].cost);
+            router_list[failed_index].cost = UINT16_T_MAX;
+            list_remove(curr);
+          }
         }
-      }
-      //Push back to queue
-      tv = update_timeout();
+        //Push back to queue
+        gettimeofday(&curr_time, NULL);
+        tv = update_timeout();
+      }while(curr_time.tv_sec == tv.tv_sec);
+
       //Next timeout calculation
 #ifdef TIMEOUT_FUNC
       if(tv.tv_sec ==0 && tv.tv_usec ==0)
@@ -96,8 +103,6 @@ int main(int argc, char **argv)
       }
       else
       {
-        struct timeval curr_time;
-        gettimeofday(&curr_time, NULL);
         timersub(&tv, &curr_time, &tv);
       }
 #else
