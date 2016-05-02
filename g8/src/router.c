@@ -94,7 +94,7 @@ void router_control_receive(SOCKET sock)
   LOG("ROUTER Control: Received %d:%s->%x\n", ret, IP, addr.sin_addr.s_addr);
 
   timer_elem *temp;
-#if 1 
+#if 1
   if((temp = find_timeout_by_ip(addr.sin_addr.s_addr))==NULL)
   {
     struct timer_elem *in = malloc(sizeof(struct timer_elem));
@@ -104,15 +104,19 @@ void router_control_receive(SOCKET sock)
     in->port = router_list[index].port_routing;
     gettimeofday(&(in->timeout), NULL);
     in->timeout.tv_sec += timeout;
-    list_push(in);
+    LOG("Next timeout router %d\n", in->timeout.tv_sec);
+//    list_push(in);
+    list_insert_ordered(in);
   }
   else
   {
     list_remove(temp);
     gettimeofday(&(temp->timeout), NULL);
     temp->timeout.tv_sec += timeout;
+    LOG("Next timeout router %d\n", temp->timeout.tv_sec);
     temp->failures = 0;
-    list_push(temp);
+    //list_push(temp);
+    list_insert_ordered(temp);
   }
 #endif
 

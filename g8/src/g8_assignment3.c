@@ -144,6 +144,7 @@ int main(int argc, char **argv)
       struct timeval curr_time;
       gettimeofday(&curr_time, NULL);
       timersub(&tv, &curr_time, &tv);
+      LOG("Next timeout %d\n\n", tv.tv_sec);
       FD_CLR(router_control_sock ,&temp);
     }
     for(int fd = 2; fd<=active_sockets; fd++)
