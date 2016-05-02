@@ -109,6 +109,7 @@ struct timeval check_and_set_timer(struct timeval tv)
     struct timeval curr_time;
     gettimeofday(&curr_time, NULL);
     timersub(&tv, &curr_time, &tv);
+    LOG("Check and set to %d %d\n\n", tv.tv_sec, curr_time.tv_sec);
   }
   return tv;
 }

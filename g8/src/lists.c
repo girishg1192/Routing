@@ -23,6 +23,34 @@ void list_push(timer_elem *node)
     timeout_list_tail = node;
   }
 }
+void list_insert_ordered(timer_elem *node)
+{
+  timer_elem *a;
+  for(a = timeout_list_head; a!=NULL; a=a->next)
+  {
+    if(timercmp(&(a->timeout), &(node->timeout), >))
+    {
+      if(a==timeout_list_head)
+      {
+        timeout_list_head=node;
+        node->next = a;
+        a->prev = node;
+      }
+      else
+      {
+        (a->prev)->next = node;
+        node->prev = (a->prev);
+        node->next = a;
+        a->prev = node;
+      }
+      return;
+    }
+  }
+  node->prev = timeout_list_tail;
+  timeout_list_tail->next = node;
+  node->next = NULL;
+  timeout_list_tail = node;
+}
 timer_elem* list_pop()
 {
   if(timeout_list_head==NULL)
@@ -78,6 +106,7 @@ timer_elem* find_timeout_by_ip(uint32_t ip)
   {
     if(temp->ip == ip)
       return temp;
+    temp=temp->next;
   }
   return NULL;
 }
@@ -131,7 +160,8 @@ struct timeval update_timeout()
   {
     timer_elem *update = list_pop();
     update->timeout.tv_sec += timeout;
-    list_push(update);
+//    list_push(update);
+    list_insert_ordered(update);
   }
   return get_next_timeout();
 }
