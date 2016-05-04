@@ -94,7 +94,7 @@ void router_control_receive(SOCKET sock)
   LOG("ROUTER Control: Received %d:%s->%x\n", ret, IP, addr.sin_addr.s_addr);
 
   timer_elem *temp;
-#if 1
+#if 0
   if((temp = find_timeout_by_ip(addr.sin_addr.s_addr))==NULL)
   {
     struct timer_elem *in = malloc(sizeof(struct timer_elem));
