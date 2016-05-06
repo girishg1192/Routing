@@ -128,7 +128,6 @@ void recalc_routing()
       uint16_t node_cost = SUM(temp->cost, temp->dv[i].cost);
       if(node_cost<min)
       {
-        LOG("Minimum path to %d through %d\n", router_list[i].id, temp->id);
         min = node_cost;
         min_hop = temp;
       }
@@ -139,6 +138,8 @@ void recalc_routing()
       int index_min = find_router_by_ip(min_hop->ip);
       router_list[i].nexthop_id = router_list[index_min].id;
       router_list[i].nexthop_index = index_min;
+      LOG("Minimum path to %d through %d : %d\n", router_list[i].id, min_hop->id,
+          min);
     }
   }
 }
