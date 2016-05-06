@@ -119,6 +119,8 @@ void recalc_routing()
   {
     uint16_t min=UINT16_T_MAX;
     timer_elem *min_hop, *temp;
+    if(router_list[i].cost == 0)
+      continue;
     TAILQ_FOREACH(temp, &timer_list, next)
     {
       if(temp->update)
