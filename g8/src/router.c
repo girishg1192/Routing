@@ -42,7 +42,7 @@ void router_data_receive(SOCKET sock)
     memcpy(incoming_packet->current, &(buffer.seq_no), sizeof(uint16_t));
     incoming_packet->current +=sizeof(uint16_t);
     incoming_packet->count++;
-    LOG("%s\n", incoming_packet->seq_no);
+    LOG("%x\n", incoming_packet->seq_no);
   }
   if(local_ip != buffer.dest_ip)
   {
@@ -70,11 +70,15 @@ void router_data_receive(SOCKET sock)
       incoming_packet->fp = fopen(file_name, "w+");
       perror("File open failed");
     }
-    fwrite(buffer.payload, DATA_SIZE, 1, incoming_packet->fp);
-    if(buffer.fin)
+    else
     {
-      fclose(incoming_packet->fp);
-      incoming_packet->fp = NULL;
+      fwrite(buffer.payload, DATA_SIZE, 1, incoming_packet->fp);
+      if(buffer.fin)
+      {
+        fclose(incoming_packet->fp);
+        incoming_packet->fp = NULL;
+        LOG("Transfer complete\n");
+      }
     }
     //TODO packets at dest save to a file
   }
