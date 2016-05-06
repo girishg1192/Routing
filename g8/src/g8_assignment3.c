@@ -157,7 +157,7 @@ int main(int argc, char **argv)
       tv = get_next_timeout();
       struct timeval curr_time;
       gettimeofday(&curr_time, NULL);
-      if(tv.tv_sec==curr_time.tv_sec)
+      if(tv.tv_sec<=curr_time.tv_sec)
         tv=check_timeout();
       timersub(&tv, &curr_time, &tv);
       LOG("Next timeout %d\n\n", tv.tv_sec);
