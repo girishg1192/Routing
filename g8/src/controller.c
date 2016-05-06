@@ -200,20 +200,26 @@ void update_router(SOCKET sock, control_message response)
   router_cost = ntohs(router_cost);
   data = data+sizeof(uint16_t);
   int update_index = find_index_by_id(router_id);
-  int old_cost = router_list[update_index].cost;
-  router_list[update_index].cost = router_cost;
-  router_list[update_index].nexthop_id = router_id;
+  costs[update_index].cost = router_cost;
+  timer_elem *update;
+  TAILQ_FOREACH(update, &timer_list, next)
+  {
+    if(update->id == router_id)
+      update->cost = router_cost;
+  }
+  //router_list[update_index].cost = router_cost;
   LOG("Update router %d %d %x to %d", router_list[update_index].id, 
       router_list[update_index].port_routing, router_list[update_index].ip, router_cost);
+  recalc_routing();
   //Update nodes Distance vector
-  for(int i=0; i<router_count; i++)
-  {
-    if(i!=update_index && router_list[i].nexthop_id == router_id)
-    {
-      router_list[i].cost = router_list[i].cost - old_cost;
-      router_list[i].cost = SUM(router_list[i].cost, router_cost);
-    }
-  }
+  //for(int i=0; i<router_count; i++)
+  //{
+  //  if(i!=update_index && router_list[i].nexthop_id == router_id)
+  //  {
+  //    router_list[i].cost = router_list[i].cost - old_cost;
+  //    router_list[i].cost = SUM(router_list[i].cost, router_cost);
+  //  }
+  //}
 
   response.ip = get_peer_from_socket(sock);
   response.response_time = 0;
