@@ -208,6 +208,7 @@ void update_router(SOCKET sock, control_message response)
     if(i!=update_index && router_list[i].nexthop_id == router_id)
     {
       router_list[i].cost = router_list[i].cost - old_cost + router_cost;
+      router_list[i].nexthop_id = router_id;
     }
   }
 
