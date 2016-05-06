@@ -118,7 +118,7 @@ struct file_stats
   uint8_t transfer_id;
   uint8_t ttl;
   uint16_t padding;
-  char seq_no[10000];   //For a 10Mb file
+  uint16_t seq_no[10000];   //For a 10Mb file
   char *current;
   FILE *fp;
   int count;
