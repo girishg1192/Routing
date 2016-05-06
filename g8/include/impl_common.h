@@ -18,6 +18,8 @@
 typedef int SOCKET;
 #define LOG printf
 
+#define SUM(X,Y)   (((X+Y)<X || (X+Y)<Y)?UINT16_T_MAX:(X+Y))
+
 //router list as array
 #define ARRAY_ROUTER
 
