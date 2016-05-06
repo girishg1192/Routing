@@ -99,9 +99,11 @@ void router_control_receive(SOCKET sock)
   {
     struct timer_elem *in = malloc(sizeof(struct timer_elem));
     memset(in, 0, sizeof(struct timer_elem));
+    in->dv = malloc(sizeof(distance_vector)*router_count);
     int index = find_router_by_ip(addr.sin_addr.s_addr);
     in->ip = router_list[index].ip;
     in->port = router_list[index].port_routing;
+    in->cost = router_list[index].cost;
     gettimeofday(&(in->timeout), NULL);
     in->timeout.tv_sec += timeout;
     LOG("Next timeout router %d\n", in->timeout.tv_sec);
@@ -154,20 +156,11 @@ void router_control_receive(SOCKET sock)
     memcpy(&router_cost, buffer, sizeof(uint16_t));
     router_cost = ntohs(router_cost);
     buffer = buffer + sizeof(uint16_t);
-    int index = find_index_by_id(router_id);
-    //if(router_list[index].nexthop_id == source.id)
-    //{
-    //  router_list[index].cost = SUM(source.cost,router_cost);
-    //}
-    if(router_list[index].cost > SUM(source.cost, router_cost))
-    {
-      router_list[index].cost = SUM(source.cost, router_cost);
-      router_list[index].nexthop_id = source.id;
-      router_list[index].nexthop_index = src_index;
-      //update route
-      LOG("Shorter path to %d through %d\n", router_id, src_index);
-    }
+    temp->dv[i].cost = router_cost;
+    temp->dv[i].id = router_id;
+//    int index = find_index_by_id(router_id, router_info);
   }
+  recalc_routing();
   free(ptr);
   //TODO handle actual routing and stuff
 }

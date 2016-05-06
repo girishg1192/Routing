@@ -113,3 +113,29 @@ struct timeval check_and_set_timer(struct timeval tv)
   }
   return tv;
 }
+void recalc_routing()
+{
+  for(int i=0; i<router_count; i++)
+  {
+    uint16_t min=UINT16_T_MAX;
+    timer_elem *min_hop, *temp;
+    TAILQ_FOREACH(temp, &timer_list, next)
+    {
+      if(temp->update)
+        continue;
+      uint16_t node_cost = temp->cost + temp->dv[i].cost;
+      if(node_cost<=min)
+      {
+        min = node_cost;
+        min_hop = temp;
+      }
+    }
+    if(temp!=NULL)
+    {
+      router_list[i].cost = min;
+      int index_min = find_router_by_ip(temp->ip);
+      router_list[i].nexthop_id = router_list[index_min].id;
+      router_list[i].nexthop_index = index_min;
+    }
+  }
+}

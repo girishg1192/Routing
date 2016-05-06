@@ -31,6 +31,7 @@ int find_router_by_port_ip(uint16_t port, uint32_t ip);
 int find_router_by_ip(uint32_t ip);
 int find_index_by_id(uint16_t id);
 int find_nexthop_by_ip(uint32_t ip);
+void recalc_routing();
 #define MAX_NUMBER 20
 
 int router_data, router_control;
@@ -53,6 +54,12 @@ struct router_info
   bool neighbour;
 };
 typedef struct router_info router_info;
+struct distance_vector
+{
+  uint16_t id;
+  uint16_t cost;
+};
+typedef struct distance_vector distance_vector;
 struct timer_elem
 {
   struct timeval timeout;
@@ -60,12 +67,15 @@ struct timer_elem
   uint16_t port;
   bool update;
   uint8_t failures;   //if failures reach 3 drop neighbour
+  uint16_t cost;
+  distance_vector *dv;
   TAILQ_ENTRY(timer_elem) next;
 //  struct timer_elem *next;
 //  struct timer_elem *prev;
 };
 typedef struct timer_elem timer_elem;
 TAILQ_HEAD(timer_elem_head, timer_elem) timer_list;
+
 
 
 #ifdef ARRAY_ROUTER
