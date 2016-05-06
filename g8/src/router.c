@@ -97,7 +97,7 @@ void router_control_receive(SOCKET sock)
 #if 1
   if((temp = find_timeout_by_ip(addr.sin_addr.s_addr))==NULL)
   {
-    struct timer_elem *temp= malloc(sizeof(struct timer_elem));
+    temp= malloc(sizeof(struct timer_elem));
     memset(temp, 0, sizeof(struct timer_elem));
     temp->dv = malloc(sizeof(distance_vector)*router_count);
     int index = find_router_by_ip(addr.sin_addr.s_addr);
