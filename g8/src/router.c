@@ -136,7 +136,7 @@ void router_control_receive(SOCKET sock)
   LOG("Updates : %d from %d %x\n", count, src_port, src_ip);
 
   int src_index =  find_router_by_port_ip(src_port, src_ip);
-  router_info source = router_list[src_index];
+  router_info source = costs[src_index];
   for(int i=0; i<count; i++)
   {
     uint32_t ip_addr;

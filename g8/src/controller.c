@@ -123,6 +123,7 @@ void init_vectors(SOCKET sock, control_message header)
 #ifdef ARRAY_ROUTER
   int mem_size = sizeof(router_info)*router_count;
   router_list = malloc(mem_size);
+  costs = malloc(mem_size);
   memset(router_list, 0, mem_size);
 #endif
 
@@ -165,6 +166,7 @@ void init_vectors(SOCKET sock, control_message header)
         router_list[i].id, router_list[i].port_routing, router_list[i].port_data, 
         router_list[i].cost, IP);
   }
+  memcpy(costs, router_list, mem_size);
   header.ip = get_peer_from_socket(sock);
   header.response_time = 0;
   header.length_data = 0;

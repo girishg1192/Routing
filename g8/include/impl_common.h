@@ -70,6 +70,7 @@ TAILQ_HEAD(timer_elem_head, timer_elem) timer_list;
 
 #ifdef ARRAY_ROUTER
 router_info *router_list;
+router_info *costs;
 #else
 struct list_elem
 {
