@@ -200,6 +200,7 @@ void update_router(SOCKET sock, control_message response)
   int update_index = find_index_by_id(router_id);
   int old_cost = router_list[update_index].cost;
   router_list[update_index].cost = router_cost;
+  router_list[update_index].nexthop_id = router_id;
   LOG("Update router %d %d %x to %d", router_list[update_index].id, 
       router_list[update_index].port_routing, router_list[update_index].ip, router_cost);
   //Update nodes Distance vector
@@ -208,7 +209,6 @@ void update_router(SOCKET sock, control_message response)
     if(i!=update_index && router_list[i].nexthop_id == router_id)
     {
       router_list[i].cost = router_list[i].cost - old_cost + router_cost;
-      router_list[i].nexthop_id = router_id;
     }
   }
 
