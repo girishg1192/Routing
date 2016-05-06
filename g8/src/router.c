@@ -155,7 +155,7 @@ void router_control_receive(SOCKET sock)
     router_cost = ntohs(router_cost);
     buffer = buffer + sizeof(uint16_t);
     int index = find_index_by_id(router_id);
-    if(router_list[index].nexthop_id = source.id)
+    if(router_list[index].nexthop_id == source.id)
     {
       router_list[index].cost = source.cost + router_cost;
     }
