@@ -203,6 +203,7 @@ struct timeval check_timeout()
         LOG("Router %d %d Failed", router_list[failed_index].id, 
             router_list[failed_index].cost);
         router_list[failed_index].cost = UINT16_T_MAX;
+        costs[failed_index].cost = UINT16_T_MAX;
         TAILQ_REMOVE(&timer_list, curr, next);
         failed=1;
       }
