@@ -123,7 +123,7 @@ void recalc_routing()
       continue;
     TAILQ_FOREACH(temp, &timer_list, next)
     {
-      if(temp->update)
+      if(temp->update || temp->dv[i].cost==UINT16_T_MAX)
         continue;
       uint16_t node_cost = SUM(temp->cost, temp->dv[i].cost);
       if(node_cost<min)
