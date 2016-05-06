@@ -141,12 +141,7 @@ struct timeval get_next_timeout()
 {
   struct timeval null;
   memset(&null, 0, sizeof(struct timeval));
-  if(!init)
-  {
-    //return NULL
-    LOG("Not init\n");
-    return null;
-  }
+
   timer_elem *check;
   check = TAILQ_FIRST(&timer_list);
   if(check == NULL)
