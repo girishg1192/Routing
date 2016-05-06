@@ -104,6 +104,7 @@ void router_control_receive(SOCKET sock)
     temp->ip = router_list[index].ip;
     temp->port = router_list[index].port_routing;
     temp->cost = router_list[index].cost;
+    temp->id = router_list[index].id;
     gettimeofday(&(temp->timeout), NULL);
     temp->timeout.tv_sec += timeout;
     LOG("Next timeout router %d\n", temp->timeout.tv_sec);
@@ -135,7 +136,7 @@ void router_control_receive(SOCKET sock)
   uint32_t src_ip;
   memcpy(&src_ip, buffer, sizeof(uint32_t));
   buffer = buffer+sizeof(uint32_t);
-  LOG("Updates : %d from %d %x\n", count, src_port, src_ip);
+  LOG("Routing Updates from %d", temp->id);
 
   for(int i=0; i<count; i++)
   {
@@ -157,7 +158,8 @@ void router_control_receive(SOCKET sock)
     temp->dv[i].cost = router_cost;
     temp->dv[i].id = router_id;
 //    int index = find_index_by_id(router_id, router_info);
-    LOG("check\n");
+    LOG("ID:%d Cost:%d\n", router_id, router_cost);
+  
   }
   recalc_routing();
   free(ptr);

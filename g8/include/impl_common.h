@@ -68,6 +68,7 @@ struct timer_elem
   bool update;
   uint8_t failures;   //if failures reach 3 drop neighbour
   uint16_t cost;
+  uint16_t id;
   distance_vector *dv;
   TAILQ_ENTRY(timer_elem) next;
 //  struct timer_elem *next;

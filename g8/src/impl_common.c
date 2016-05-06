@@ -126,6 +126,7 @@ void recalc_routing()
       uint16_t node_cost = temp->cost + temp->dv[i].cost;
       if(node_cost<=min)
       {
+        LOG("Minimum path to %d through %d\n", router_list[i].id, temp->id);
         min = node_cost;
         min_hop = temp;
       }
