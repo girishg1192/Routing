@@ -147,7 +147,8 @@ int main(int argc, char **argv)
       //Router data is TCP
       int sockfd = controller_server_accept(router_data_sock);
       LOG("Incoming Router connection %d\n", sockfd);
-      add_fd(sockfd);
+      router_data_receive(sockfd);
+//      add_fd(sockfd);
       FD_CLR(router_data_sock ,&temp);
     }
     if(FD_ISSET(router_control_sock, &temp))
@@ -167,7 +168,7 @@ int main(int argc, char **argv)
     {
       if(FD_ISSET(fd, &temp))
       {
-        LOG("Incoming router Data %d\n", fd);
+//        LOG("Incoming router Data %d\n", fd);
         router_data_receive(fd);
         //TODO clear FDs after reading status
       }
