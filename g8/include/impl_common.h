@@ -5,6 +5,7 @@
 #include <sys/select.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/queue.h>
 #include <netdb.h>
 
 #include <stdlib.h>
@@ -59,10 +60,12 @@ struct timer_elem
   uint16_t port;
   bool update;
   uint8_t failures;   //if failures reach 3 drop neighbour
-  struct timer_elem *next;
-  struct timer_elem *prev;
+  TAILQ_ENTRY(timer_elem) next;
+//  struct timer_elem *next;
+//  struct timer_elem *prev;
 };
 typedef struct timer_elem timer_elem;
+TAILQ_HEAD(timer_elem_head, timer_elem) timer_list;
 
 
 #ifdef ARRAY_ROUTER

@@ -185,13 +185,13 @@ struct timeval check_timeout()
   struct timeval curr_time, tv;
   do
   {
-    timer_elem *curr = list_peek();
+    timer_elem *curr = TAILQ_FIRST(&timer_list);
     int failed=0;
     if(curr!=NULL && curr->update)
       router_send_updates();
     else
     {
-      timer_elem *curr = list_peek();
+      timer_elem *curr = TAILQ_FIRST(&timer_list);
       //Update failure for neighbours
       LOG("Something failed %x %d %d times\n", curr->ip, curr->port,
           curr->failures);
@@ -203,7 +203,7 @@ struct timeval check_timeout()
         LOG("Router %d %d Failed", router_list[failed_index].id, 
             router_list[failed_index].cost);
         router_list[failed_index].cost = UINT16_T_MAX;
-        list_pop();
+        TAILQ_REMOVE(&timer_list, curr, next);
         failed=1;
       }
     }

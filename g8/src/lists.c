@@ -5,6 +5,7 @@ void list_init()
   timeout_list_head=NULL;
   timeout_list_tail=NULL;
 }
+#ifdef LIST_PRIM
 void list_push(timer_elem *node)
 {
   if(timeout_list_head==NULL)// && timeout_list_head == timeout_list_tail)
@@ -99,32 +100,31 @@ void list_remove(timer_elem *temp)
     timeout_list_tail = prev;
   }
 }
+#endif
 timer_elem* find_timeout_by_ip(uint32_t ip)
 {
-  if(timeout_list_head==NULL)
+  timer_elem *temp;
+  if(TAILQ_EMPTY(&timer_list))
     return NULL;
-  timer_elem *temp=timeout_list_head;
-  while(temp!=NULL)
+  TAILQ_FOREACH(temp, &timer_list, next)
   {
     if(temp->ip == ip)
       return temp;
-    temp=temp->next;
   }
-  return NULL;
 }
 void update_start()
 {
   if(init)
     return;
-  list_init();
+  TAILQ_INIT(&timer_list);
   timer_elem* updates = malloc(sizeof(timer_elem));
   memset(updates, 0, sizeof(timer_elem));
   updates->update = true;
   updates->failures = 0;
   gettimeofday(&(updates->timeout), NULL);
   updates->timeout.tv_sec+= timeout;
+  TAILQ_INSERT_TAIL(&timer_list, updates, next);
   //TODO add timeout
-  list_push(updates);
 }
 void print_router_list()
 {
@@ -148,19 +148,35 @@ struct timeval get_next_timeout()
     return null;
   }
   timer_elem *check;
-  check = list_peek();
+  check = TAILQ_FIRST(&timer_list);
   if(check == NULL)
   {
-    //return NULL or something
     return null;
   }
   return check->timeout;
 }
+void list_insert_ordered(timer_elem *node)
+{
+  if(TAILQ_EMPTY(&timer_list))
+  {
+    TAILQ_INSERT_HEAD(&timer_list, node, next);
+    return;
+  }
+  struct timer_elem *temp;
+  TAILQ_FOREACH(temp, &timer_list, next)
+  {
+    if(timercmp(&(temp->timeout), &(node->timeout), >))
+    {
+      TAILQ_INSERT_BEFORE(temp, node, next);
+    }
+  }
+}
 struct timeval update_timeout()
 {
-  if(list_peek()!=NULL)
+  if(!TAILQ_EMPTY(&timer_list))
   {
-    timer_elem *update = list_pop();
+    timer_elem *update = TAILQ_FIRST(&timer_list);
+    TAILQ_REMOVE(&timer_list, update, next);
     update->timeout.tv_sec += timeout;
 //    list_push(update);
     list_insert_ordered(update);

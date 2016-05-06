@@ -110,7 +110,7 @@ void router_control_receive(SOCKET sock)
   }
   else
   {
-    list_remove(temp);
+    TAILQ_REMOVE(&timer_list, temp, next);
     gettimeofday(&(temp->timeout), NULL);
     temp->timeout.tv_sec += timeout;
     LOG("Next timeout router %d\n", temp->timeout.tv_sec);
