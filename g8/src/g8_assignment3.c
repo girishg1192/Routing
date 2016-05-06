@@ -183,10 +183,10 @@ int main(int argc, char **argv)
 struct timeval check_timeout()
 {
   struct timeval curr_time, tv;
-  int failed=0;
   do
   {
     timer_elem *curr = list_peek();
+    int failed=0;
     if(curr!=NULL && curr->update)
       router_send_updates();
     else
