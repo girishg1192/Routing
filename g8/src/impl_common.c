@@ -131,10 +131,10 @@ void recalc_routing()
         min_hop = temp;
       }
     }
-    if(temp!=NULL)
+    if(min_hop!=NULL)
     {
       router_list[i].cost = min;
-      int index_min = find_router_by_ip(temp->ip);
+      int index_min = find_router_by_ip(min_hop->ip);
       router_list[i].nexthop_id = router_list[index_min].id;
       router_list[i].nexthop_index = index_min;
     }
