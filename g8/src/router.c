@@ -97,18 +97,18 @@ void router_control_receive(SOCKET sock)
 #if 1
   if((temp = find_timeout_by_ip(addr.sin_addr.s_addr))==NULL)
   {
-    struct timer_elem *in = malloc(sizeof(struct timer_elem));
-    memset(in, 0, sizeof(struct timer_elem));
-    in->dv = malloc(sizeof(distance_vector)*router_count);
+    struct timer_elem *temp= malloc(sizeof(struct timer_elem));
+    memset(temp, 0, sizeof(struct timer_elem));
+    temp->dv = malloc(sizeof(distance_vector)*router_count);
     int index = find_router_by_ip(addr.sin_addr.s_addr);
-    in->ip = router_list[index].ip;
-    in->port = router_list[index].port_routing;
-    in->cost = router_list[index].cost;
-    gettimeofday(&(in->timeout), NULL);
-    in->timeout.tv_sec += timeout;
-    LOG("Next timeout router %d\n", in->timeout.tv_sec);
+    temp->ip = router_list[index].ip;
+    temp->port = router_list[index].port_routing;
+    temp->cost = router_list[index].cost;
+    gettimeofday(&(temp->timeout), NULL);
+    temp->timeout.tv_sec += timeout;
+    LOG("Next timeout router %d\n", temp->timeout.tv_sec);
 //    list_push(in);
-    list_insert_ordered(in);
+    list_insert_ordered(temp);
   }
   else
   {
@@ -157,6 +157,7 @@ void router_control_receive(SOCKET sock)
     temp->dv[i].cost = router_cost;
     temp->dv[i].id = router_id;
 //    int index = find_index_by_id(router_id, router_info);
+    LOG("check\n");
   }
   recalc_routing();
   free(ptr);
