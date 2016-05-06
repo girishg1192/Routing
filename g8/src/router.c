@@ -44,6 +44,8 @@ void router_data_receive(SOCKET sock)
     incoming_packet->count++;
     LOG("%x\n", ntohs(buffer.seq_no));
   }
+  memcpy(&not_last, &last_packet, sizeof(data_packet));
+  memcpy(&last_packet, &buffer, sizeof(data_packet));
   if(local_ip != buffer.dest_ip)
   {
     int nexthop_index = find_nexthop_by_ip(buffer.dest_ip);
@@ -59,8 +61,6 @@ void router_data_receive(SOCKET sock)
     check_error(err, "Sendfile connect");
     send(nexthop_sock, &buffer, ret, 0);
     close(nexthop_sock);
-    memcpy(&not_last, &last_packet, sizeof(data_packet));
-    memcpy(&last_packet, &buffer, sizeof(data_packet));
   }
   else
   {
