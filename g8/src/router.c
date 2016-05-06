@@ -70,6 +70,7 @@ void router_data_receive(SOCKET sock)
       sprintf(file_name, "file-%d", buffer.transfer_id);
       incoming_packet->fp = fopen(file_name, "w+");
       perror("File open failed");
+      fwrite(buffer.payload, DATA_SIZE, 1, incoming_packet->fp);
     }
     else
     {
