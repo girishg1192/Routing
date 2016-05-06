@@ -159,8 +159,7 @@ void router_control_receive(SOCKET sock)
     {
       router_list[index].cost = SUM(source.cost,router_cost);
     }
-    if(!router_list[index].neighbour &&
-        router_list[index].cost > SUM(source.cost, router_cost))
+    if(router_list[index].cost > SUM(source.cost, router_cost))
     {
       router_list[index].cost = SUM(source.cost, router_cost);
       router_list[index].nexthop_id = source.id;
