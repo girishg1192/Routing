@@ -197,15 +197,15 @@ void update_router(SOCKET sock, control_message response)
   memcpy(&router_cost, data, sizeof(uint16_t));
   router_cost = ntohs(router_cost);
   data = data+sizeof(uint16_t);
-  int i = find_index_by_id(router_id);
-  int old_cost = router_list[i].cost;
-  router_list[i].cost = router_cost;
-  LOG("Update router %d %d %x to %d", router_list[i].id, 
-      router_list[i].port_routing, router_list[i].ip, router_cost);
+  int update_index = find_index_by_id(router_id);
+  int old_cost = router_list[update_index].cost;
+  router_list[update_index].cost = router_cost;
+  LOG("Update router %d %d %x to %d", router_list[update_index].id, 
+      router_list[update_index].port_routing, router_list[update_index].ip, router_cost);
   //Update nodes Distance vector
   for(int i=0; i<router_count; i++)
   {
-    if(router_list[i].nexthop_id == router_id)
+    if(i!=update_index && router_list[i].nexthop_id == router_id)
     {
       router_list[i].cost = router_list[i].cost - old_cost + router_cost;
     }

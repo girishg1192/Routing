@@ -155,6 +155,10 @@ void router_control_receive(SOCKET sock)
     router_cost = ntohs(router_cost);
     buffer = buffer + sizeof(uint16_t);
     int index = find_index_by_id(router_id);
+    if(router_list[index].nexthop_id = source.id)
+    {
+      router_list[index].cost = source.cost + router_cost;
+    }
     if(router_list[index].cost>(source.cost + router_cost))
     {
       router_list[index].cost = source.cost + router_cost;
@@ -185,7 +189,7 @@ void router_send_updates()
   uint32_t ip = local_ip;
   memcpy(data, &ip, sizeof(uint32_t));
   data = data+sizeof(uint32_t);
-  LOG("Copied header %d count %d\n", data-final, router_count);
+  LOG("\n\nRouting updates\n\n");
   for(int i=0; i<router_count; i++)
   {
     uint32_t ip_addr = router_list[i].ip;
@@ -200,13 +204,17 @@ void router_send_updates()
     temp = htons(router_list[i].cost);
     memcpy(data, &temp, sizeof(uint16_t));
     data+= sizeof(uint16_t);
+    char IP[INET_ADDRSTRLEN];
+    ip_readable(router_list[i].ip, IP);
+    LOG("Router: %d: ports %d %d\n cost:%d Nexthop:%d IP:%s\n",
+        router_list[i].id, router_list[i].port_routing, router_list[i].port_data, 
+        router_list[i].cost, router_list[i].nexthop_id, IP);
   }
-  LOG("Data copied %d %d\n", size, data-final);
   for(int i=0; i<router_count; i++)
   {
     if(!router_list[i].neighbour)
       continue;
-    LOG("Sending data to %d %d\n", i, router_list[i].port_routing);
+    LOG("Sending data to %d %d\n", router_list[i].id, router_list[i].port_routing);
     SOCKET sock = socket(AF_INET, SOCK_DGRAM, 0);
 
     struct sockaddr_in in;
