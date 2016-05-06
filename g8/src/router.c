@@ -12,13 +12,13 @@ void router_data_receive(SOCKET sock)
   data_packet buffer;
   int ret = recv(sock, &buffer, sizeof(data_packet), 0);
   char IP[INET_ADDRSTRLEN];
-  ip_readable(buffer.dest_ip, IP);
-  if(ret==0)
+  if(ret<=0)
   {
     clear_fd(sock);
     close(sock);
     return;
   }
+  ip_readable(buffer.dest_ip, IP);
   LOG("ROUTER: Received %d:%s\n", ret, IP);
   if((--buffer.ttl)==0)
     return;
@@ -42,7 +42,7 @@ void router_data_receive(SOCKET sock)
     memcpy(incoming_packet->current, &(buffer.seq_no), sizeof(uint16_t));
     incoming_packet->current +=sizeof(uint16_t);
     incoming_packet->count++;
-    LOG("%x\n", incoming_packet->seq_no);
+    LOG("%x\n", ntohs(buffer.seq_no));
   }
   if(local_ip != buffer.dest_ip)
   {
@@ -58,6 +58,7 @@ void router_data_receive(SOCKET sock)
     int err= connect(nexthop_sock, (struct sockaddr *)&in, sizeof(in));
     check_error(err, "Sendfile connect");
     send(nexthop_sock, &buffer, ret, 0);
+    close(nexthop_sock);
     memcpy(&not_last, &last_packet, sizeof(data_packet));
     memcpy(&last_packet, &buffer, sizeof(data_packet));
   }
