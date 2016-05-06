@@ -136,8 +136,7 @@ void router_control_receive(SOCKET sock)
   uint32_t src_ip;
   memcpy(&src_ip, buffer, sizeof(uint32_t));
   buffer = buffer+sizeof(uint32_t);
-  LOG("Routing Updates from %d : Cost\n %d", temp->id, 
-      router_list[find_index_by_id(temp->id)].cost);
+  LOG("Routing Updates from %d : Cost%d\n", temp->id, temp->cost);
 
   for(int i=0; i<count; i++)
   {
