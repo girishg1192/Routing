@@ -163,8 +163,10 @@ void list_insert_ordered(timer_elem *node)
     if(timercmp(&(temp->timeout), &(node->timeout), >))
     {
       TAILQ_INSERT_BEFORE(temp, node, next);
+      return;
     }
   }
+  TAILQ_INSERT_TAIL(&timer_list, node, next);
 }
 struct timeval update_timeout()
 {
