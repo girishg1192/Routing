@@ -39,16 +39,18 @@ void router_data_receive(SOCKET sock)
       incoming_packet->current +=sizeof(uint16_t);
       incoming_packet->count++;
 
-      int nexthop_index = find_nexthop_by_ip(buffer.dest_ip);
-      incoming_packet->sock = socket(AF_INET, SOCK_STREAM, 0);
-      struct sockaddr_in in;
-      bzero(&in, sizeof(in));
-      in.sin_family = AF_INET;
-      in.sin_addr.s_addr = router_list[nexthop_index].ip;
-      in.sin_port = htons(router_list[nexthop_index].port_data);
-      int err= connect(incoming_packet->sock, (struct sockaddr *)&in, sizeof(in));
-      check_error(err, "Sendfile connect");
-
+      if(buffer.dest_ip!=local_ip)
+      {
+        int nexthop_index = find_nexthop_by_ip(buffer.dest_ip);
+        incoming_packet->sock = socket(AF_INET, SOCK_STREAM, 0);
+        struct sockaddr_in in;
+        bzero(&in, sizeof(in));
+        in.sin_family = AF_INET;
+        in.sin_addr.s_addr = router_list[nexthop_index].ip;
+        in.sin_port = htons(router_list[nexthop_index].port_data);
+        int err= connect(incoming_packet->sock, (struct sockaddr *)&in, sizeof(in));
+        check_error(err, "Sendfile connect");
+      }
       insert_file(incoming_packet);
     }
     else
