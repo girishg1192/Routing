@@ -69,54 +69,10 @@ int main(int argc, char **argv)
     if(ret==0)
     {
       struct timeval curr_time;
-#if 0
-      int failed=0;
-      do
-      {
-        timer_elem *curr = list_peek();
-        if(curr!=NULL && curr->update)
-          router_send_updates();
-        else
-        {
-          timer_elem *curr = list_peek();
-          //Update failure for neighbours
-          LOG("Something failed %x %d %d times\n", curr->ip, curr->port,
-              curr->failures);
-          curr->failures++;
-          if(curr->failures==3)
-          {
-            LOG("Node crashed\n");
-            int failed_index = find_router_by_ip(curr->ip);
-            LOG("Router %d %d Failed", router_list[failed_index].id, 
-                router_list[failed_index].cost);
-            router_list[failed_index].cost = UINT16_T_MAX;
-            list_pop();
-            failed=1;
-          }
-        }
-        //Push back to queue
-        gettimeofday(&curr_time, NULL);
-        if(!failed)
-          tv = update_timeout();
-        else
-          tv = get_next_timeout();
-      }while(curr_time.tv_sec == tv.tv_sec);
-#endif
       tv = check_timeout();
 
       //Next timeout calculation
-#ifdef TIMEOUT_FUNC
-      if(tv.tv_sec ==0 && tv.tv_usec ==0)
-      {
-        tv.tv_sec = 10;
-      }
-      else
-      {
-        timersub(&tv, &curr_time, &tv);
-      }
-#else
       tv = check_and_set_timer(tv);
-#endif
     }
     if(FD_ISSET(control_server_sock, &temp))
     {
