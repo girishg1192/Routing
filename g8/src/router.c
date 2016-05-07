@@ -85,7 +85,10 @@ void router_data_receive(SOCKET sock)
     }
   }
   else
+  {
     close(sock);
+    clear_fd(sock);
+  }
   //TODO handle actual routing and stuff
 }
 
