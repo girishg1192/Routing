@@ -11,8 +11,8 @@ void router_data_receive(SOCKET sock)
 {
   data_packet buffer;
   char IP[INET_ADDRSTRLEN];
-  int ret;
-  while((ret = recv_t(sock, (char *)&buffer, sizeof(data_packet)))>0)
+  int ret = recv_t(sock, (char *)&buffer, sizeof(data_packet));
+  if(ret>0)
   {
     //  if(ret<=0)
     //  {
@@ -78,13 +78,15 @@ void router_data_receive(SOCKET sock)
         FILE *fp = fopen(file_name, "w+");
         fwrite(incoming_packet->data, incoming_packet->count*DATA_SIZE, 1, fp);
         fclose(fp);
+        close(sock);
         LOG("Transfer complete\n");
       }
       //TODO packets at dest save to a file
     }
   }
+  else
+    close(sock);
   //TODO handle actual routing and stuff
-  close(sock);
 }
 
 void router_control_receive(SOCKET sock)
