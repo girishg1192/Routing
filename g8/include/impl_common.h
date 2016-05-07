@@ -124,6 +124,7 @@ struct file_stats
   FILE *fp;
   char *data;
   int count;
+  SOCKET sock;
   struct file_stats *next;
 };
 typedef struct file_stats file_stats;

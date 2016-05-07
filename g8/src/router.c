@@ -20,8 +20,8 @@ void router_data_receive(SOCKET sock)
     //    close(sock);
     //    return;
     //  }
-    ip_readable(buffer.dest_ip, IP);
-    LOG("ROUTER: Received %d:%s\n", ret, IP);
+    //ip_readable(buffer.dest_ip, IP);
+    //LOG("ROUTER: Received %d:%s\n", ret, IP);
     if((--buffer.ttl)==0)
       return;
     // LOG("%s\n", buffer.payload);
@@ -38,6 +38,17 @@ void router_data_receive(SOCKET sock)
       memcpy(incoming_packet->current, &(buffer.seq_no), sizeof(uint16_t));
       incoming_packet->current +=sizeof(uint16_t);
       incoming_packet->count++;
+
+      int nexthop_index = find_nexthop_by_ip(buffer.dest_ip);
+      incoming_packet->sock = socket(AF_INET, SOCK_STREAM, 0);
+      struct sockaddr_in in;
+      bzero(&in, sizeof(in));
+      in.sin_family = AF_INET;
+      in.sin_addr.s_addr = router_list[nexthop_index].ip;
+      in.sin_port = htons(router_list[nexthop_index].port_data);
+      int err= connect(incoming_packet->sock, (struct sockaddr *)&in, sizeof(in));
+      check_error(err, "Sendfile connect");
+
       insert_file(incoming_packet);
     }
     else
@@ -45,25 +56,15 @@ void router_data_receive(SOCKET sock)
       memcpy(incoming_packet->current, &(buffer.seq_no), sizeof(uint16_t));
       incoming_packet->current +=sizeof(uint16_t);
       incoming_packet->count++;
-      LOG("%x\n", ntohs(buffer.seq_no));
+      //LOG("%x\n", ntohs(buffer.seq_no));
     }
     memcpy(&not_last, &last_packet, sizeof(data_packet));
     memcpy(&last_packet, &buffer, sizeof(data_packet));
     if(local_ip != buffer.dest_ip)
     {
-      int nexthop_index = find_nexthop_by_ip(buffer.dest_ip);
-      LOG("Nexthop %d port %d\n", router_list[nexthop_index].id, 
-          router_list[nexthop_index].port_data);
-      SOCKET nexthop_sock = socket(AF_INET, SOCK_STREAM, 0);
-      struct sockaddr_in in;
-      bzero(&in, sizeof(in));
-      in.sin_family = AF_INET;
-      in.sin_addr.s_addr = router_list[nexthop_index].ip;
-      in.sin_port = htons(router_list[nexthop_index].port_data);
-      int err= connect(nexthop_sock, (struct sockaddr *)&in, sizeof(in));
-      check_error(err, "Sendfile connect");
-      send(nexthop_sock, &buffer, ret, 0);
-      close(nexthop_sock);
+      send(incoming_packet->sock, &buffer, ret, 0);
+      if(buffer.fin)
+        close(incoming_packet->sock);
     }
     else
     {
