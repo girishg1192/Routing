@@ -79,6 +79,7 @@ void router_data_receive(SOCKET sock)
         fwrite(incoming_packet->data, incoming_packet->count*DATA_SIZE, 1, fp);
         fclose(fp);
         close(sock);
+        clear_fd(sock);
         LOG("Transfer complete\n");
       }
       //TODO packets at dest save to a file
