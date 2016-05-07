@@ -103,8 +103,8 @@ int main(int argc, char **argv)
       //Router data is TCP
       int sockfd = controller_server_accept(router_data_sock);
       LOG("Incoming Router connection %d\n", sockfd);
-      router_data_receive(sockfd);
-//      add_fd(sockfd);
+//      router_data_receive(sockfd);
+      add_fd(sockfd);
       FD_CLR(router_data_sock ,&temp);
     }
     if(FD_ISSET(router_control_sock, &temp))
