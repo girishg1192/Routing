@@ -143,3 +143,14 @@ void recalc_routing()
     }
   }
 }
+int recv_t(SOCKET sock_index, char *buffer, int nbytes)
+{
+  int bytes = 0;
+  bytes = recv(sock_index, buffer, nbytes, 0);
+
+  if(bytes == 0) return -1;
+  while(bytes != nbytes)
+    bytes += recv(sock_index, buffer+bytes, nbytes-bytes, 0);
+
+  return bytes;
+}

@@ -130,5 +130,6 @@ struct file_stats
 typedef struct file_stats file_stats;
 struct timeval check_and_set_timer(struct timeval tv);
 
+int recv_t(SOCKET sock_index, char *buffer, int nbytes);
 #endif
 

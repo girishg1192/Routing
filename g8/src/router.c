@@ -12,7 +12,7 @@ void router_data_receive(SOCKET sock)
   data_packet buffer;
   char IP[INET_ADDRSTRLEN];
   int ret;
-  while((ret = recv(sock, &buffer, sizeof(data_packet), 0))>0)
+  while((ret = recv_t(sock, (char *)&buffer, sizeof(data_packet)))>0)
   {
     //  if(ret<=0)
     //  {
