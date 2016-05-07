@@ -160,7 +160,10 @@ int main(int argc, char **argv)
       gettimeofday(&curr_time, NULL);
       LOG("Next timeout %d curr %d\n\n", tv.tv_sec, curr_time.tv_sec);
       if(tv.tv_sec<=curr_time.tv_sec)
+      {
         tv=check_timeout();
+        LOG("Reset timeout to tv %d", tv.tv_sec);
+      }
       timersub(&tv, &curr_time, &tv);
       FD_CLR(router_control_sock ,&temp);
     }
@@ -177,7 +180,7 @@ int main(int argc, char **argv)
     LOG("Ports %d %d %d\n", control_sock, router_data_sock, router_control_sock);
     struct timeval curr_time;
     gettimeofday(&curr_time, NULL);
-    LOG("Time-> %ld\n", curr_time.tv_sec);
+    LOG("Time-> %ld timeout->%d\n", curr_time.tv_sec, tv.tv_sec);
   }
   return 0;
 }
