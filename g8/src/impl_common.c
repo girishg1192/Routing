@@ -125,7 +125,11 @@ void recalc_routing()
     {
       if(temp->update || temp->dv[i].cost==UINT16_T_MAX)
         continue;
-      uint16_t node_cost = SUM(temp->cost, temp->dv[i].cost);
+      uint16_t node_cost = (SUM(temp->cost, temp->dv[i].cost));
+      if(node_cost<temp->cost)
+      {
+        node_cost = UINT16_T_MAX;
+      }
       if(node_cost<min)
       {
         min = node_cost;
