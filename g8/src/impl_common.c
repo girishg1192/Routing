@@ -130,7 +130,7 @@ void recalc_routing()
       {
         node_cost = UINT16_T_MAX;
       }
-      if(node_cost<min)
+      if(node_cost<=min)
       {
         min = node_cost;
         min_hop = temp;
