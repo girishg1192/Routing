@@ -113,6 +113,7 @@ typedef struct data_packet data_packet;
 
 data_packet not_last, last_packet;
 #define SENDFILE_STATS_HEADER 4
+#define FILE_SIZE_MAX (10*1024*1024)
 struct file_stats
 {
   uint8_t transfer_id;
@@ -121,6 +122,7 @@ struct file_stats
   uint16_t seq_no[10240];   //For a 10Mb file
   char *current;
   FILE *fp;
+  char *data;
   int count;
   struct file_stats *next;
 };

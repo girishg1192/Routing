@@ -34,6 +34,7 @@ void router_data_receive(SOCKET sock)
       incoming_packet->transfer_id = buffer.transfer_id;
       incoming_packet->ttl = buffer.ttl;
       incoming_packet->current= (incoming_packet->seq_no);
+      incoming_packet->data = malloc(FILE_SIZE_MAX);
       memcpy(incoming_packet->current, &(buffer.seq_no), sizeof(uint16_t));
       incoming_packet->current +=sizeof(uint16_t);
       incoming_packet->count++;
@@ -66,23 +67,15 @@ void router_data_receive(SOCKET sock)
     }
     else
     {
-      if(incoming_packet->fp==NULL)
+      memcpy(incoming_packet->data, buffer.payload, DATA_SIZE);
+      if(buffer.fin)
       {
         char file_name[50];
         sprintf(file_name, "file-%d", buffer.transfer_id);
-        incoming_packet->fp = fopen(file_name, "w+");
-        perror("File open failed");
-        fwrite(buffer.payload, DATA_SIZE, 1, incoming_packet->fp);
-      }
-      else
-      {
-        fwrite(buffer.payload, DATA_SIZE, 1, incoming_packet->fp);
-        if(buffer.fin)
-        {
-          fclose(incoming_packet->fp);
-          incoming_packet->fp = NULL;
-          LOG("Transfer complete\n");
-        }
+        FILE *fp = fopen(file_name, "w+");
+        fwrite(incoming_packet->data, incoming_packet->count*DATA_SIZE, 1, fp);
+        fclose(fp);
+        LOG("Transfer complete\n");
       }
       //TODO packets at dest save to a file
     }
