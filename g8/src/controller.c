@@ -301,7 +301,6 @@ void start_sendfile(SOCKET sock, control_message message)
 
   FILE *fp = fopen(file_name, "rb");
   int eof=0;
-  char buffer[1024];
   if(fp==NULL)
   {
     perror("file open");
@@ -310,10 +309,19 @@ void start_sendfile(SOCKET sock, control_message message)
   fseek(fp, 0, SEEK_END);
   int file_size = ftell(fp);
   rewind(fp);
-  while(fread(buffer, CHUNK_SIZE, 1, fp))
+  int packets = 0;
+  char *buffer = malloc(file_size);
+  char *cleanup_temp = buffer;
+  struct timeval curr;
+  gettimeofday(&curr, NULL);
+  LOG("%d filesize %d Time\n", file_size, curr.tv_sec);
+  fread(buffer, file_size, 1, fp);
+  gettimeofday(&curr, NULL);
+  LOG("%d Time\n", curr.tv_sec);
+  while(file_size)
   {
     file_size-=CHUNK_SIZE;
-    LOG("bytes remaining? %d %d\n", file_size, CHUNK_SIZE);
+  //  LOG("Bytes remaining? %d %d\npackets sent %d", file_size, CHUNK_SIZE, ++packets);
     //LOG("%s", buffer);
     if(file_size==0)
     {
@@ -321,7 +329,6 @@ void start_sendfile(SOCKET sock, control_message message)
       file_packet.fin = 1;
       eof=1;
     }
-    LOG("sendfile %d\n", sizeof(data_packet));
     memcpy(file_packet.payload, buffer, CHUNK_SIZE);
     //TODO keep stats
     file_packet.seq_no = htons(sequence++);
@@ -329,11 +336,14 @@ void start_sendfile(SOCKET sock, control_message message)
     incoming_packet->current +=sizeof(uint16_t);
     incoming_packet->count++;
     send(nexthop_sock, &file_packet, sizeof(data_packet), 0);
-    memcpy(&not_last, &last_packet, sizeof(data_packet));
-    memcpy(&last_packet, &file_packet, sizeof(data_packet));
-    memset(file_packet.payload, 0, CHUNK_SIZE);
-    memset(buffer, 0, CHUNK_SIZE);
+//    memset(file_packet.payload, 0, CHUNK_SIZE);
+    buffer += CHUNK_SIZE;
   }
+  gettimeofday(&curr, NULL);
+  LOG("%d Time\n", curr.tv_sec);
+  memcpy(&not_last, &last_packet, sizeof(data_packet));
+  memcpy(&last_packet, &file_packet, sizeof(data_packet));
+  free(cleanup_temp);
   close(nexthop_sock);
   error:
   message.ip = get_peer_from_socket(sock);
