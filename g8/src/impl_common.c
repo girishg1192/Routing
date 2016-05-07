@@ -123,12 +123,13 @@ void recalc_routing()
       continue;
     TAILQ_FOREACH(temp, &timer_list, next)
     {
-      if(temp->update || temp->dv[i].cost==UINT16_T_MAX)
+      if(temp->update) 
         continue;
       uint16_t node_cost = (SUM(temp->cost, temp->dv[i].cost));
       if(node_cost<temp->cost)
       {
         node_cost = UINT16_T_MAX;
+        LOG("Overflow %d\n", node_cost);
       }
       if(node_cost<=min)
       {
