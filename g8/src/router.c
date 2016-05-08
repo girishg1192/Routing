@@ -71,13 +71,16 @@ void router_data_receive(SOCKET sock)
     else
     {
       memcpy(incoming_packet->data, buffer.payload, DATA_SIZE);
+      incoming_packet->data += DATA_SIZE;
       if(buffer.fin)
       {
         char file_name[50];
         sprintf(file_name, "file-%d", buffer.transfer_id);
         FILE *fp = fopen(file_name, "w+");
+        incoming_packet->data -=incoming_packet->count*DATA_SIZE;
         fwrite(incoming_packet->data, incoming_packet->count*DATA_SIZE, 1, fp);
         fclose(fp);
+        free(incoming_packet->data);
         close(sock);
         clear_fd(sock);
         LOG("Transfer complete\n");
