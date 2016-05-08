@@ -32,7 +32,7 @@ int find_router_by_ip(uint32_t ip);
 int find_index_by_id(uint16_t id);
 int find_nexthop_by_ip(uint32_t ip);
 void recalc_routing();
-#define MAX_NUMBER 10000
+#define MAX_NUMBER 10240
 
 int router_data, router_control;
 SOCKET router_data_sock, router_control_sock;
