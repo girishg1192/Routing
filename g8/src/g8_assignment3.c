@@ -145,6 +145,7 @@ struct timeval check_timeout()
   struct timeval curr_time, tv;
   do
   {
+    LOG("Recalculate\n");
     timer_elem *curr = TAILQ_FIRST(&timer_list);
     int failed=0;
     if(curr!=NULL && curr->update)
@@ -174,6 +175,6 @@ struct timeval check_timeout()
       tv = update_timeout();
     else
       tv = get_next_timeout();
-  }while(curr_time.tv_sec == tv.tv_sec);
+  }while(curr_time.tv_sec >= tv.tv_sec);
   return tv;
 }
